@@ -1,0 +1,8 @@
+code,name
+super_admin,Super Administrator
+admin,Administrator
+principal,Principal
+teacher,Teacher
+student,Student
+guardian,Guardian
+guest,Guest

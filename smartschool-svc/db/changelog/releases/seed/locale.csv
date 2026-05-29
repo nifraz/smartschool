@@ -1,0 +1,5 @@
+code,name,native_name,is_rtl,is_enabled,sort_order
+en,English,English,0,1,10
+si,Sinhala,සිංහල,0,1,20
+ta,Tamil,தமிழ்,0,1,30
+ar,Arabic,العربية,1,1,40

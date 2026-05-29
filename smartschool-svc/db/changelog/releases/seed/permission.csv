@@ -1,0 +1,23 @@
+code,description
+*:*,Super-admin wildcard
+resource:read,List/view any resource
+resource:create,Create any resource
+resource:update,Update any resource
+resource:delete,Delete any resource
+school:read,View schools
+school:create,Create schools
+school:update,Update schools
+school:delete,Delete schools
+student:read,View students
+student:create,Create students
+student:update,Update students
+teacher:read,View teachers
+teacher:update,Update teachers
+class:read,View classes
+class:manage,Manage classes
+enrollment:approve,Approve enrollment requests
+enrollment:reject,Reject enrollment requests
+user:read,View users
+user:manage,Manage users
+i18n:manage,Manage translations
+resource:manage,Manage resource metadata

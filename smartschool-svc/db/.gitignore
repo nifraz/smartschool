@@ -1,0 +1,3 @@
+# Ensure Liquibase release folder is tracked despite the parent .NET .gitignore.
+!releases/
+!releases/**

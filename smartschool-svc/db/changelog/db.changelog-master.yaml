@@ -1,0 +1,16 @@
+# =====================================================================
+# Liquibase Master Changelog — entry point for every environment.
+# =====================================================================
+# Add new releases by appending an `include:` line below.
+# NEVER edit a deployed changeset — add a new release file instead.
+databaseChangeLog:
+  - property: { name: now,           value: CURRENT_TIMESTAMP, dbms: mariadb,mysql,postgresql }
+  - property: { name: pk.type,       value: BIGINT }
+  - property: { name: id.type,       value: INT }
+  - property: { name: code.type,     value: VARCHAR(32) }
+  - property: { name: name.type,     value: VARCHAR(128) }
+  - property: { name: text.type,     value: VARCHAR(512) }
+  - property: { name: long_text.type, value: TEXT }
+
+  # ── Releases (append in order) ────────────────────────────────────────
+  - include: { file: releases/v1.0.0.yaml, relativeToChangelogFile: true }

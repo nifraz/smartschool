@@ -1,0 +1,586 @@
+# =====================================================================
+# SmartSchool — v1.0.0 baseline schema.
+# Single file leverages YAML anchors for maximum DRY.
+# Conventions:
+#   • PK            : `id BIGINT AUTO_INCREMENT`  (lookup tables: `code VARCHAR(8|32)`)
+#   • Audit columns : appended via *audit anchor on every business table
+#   • FK columns    : `<entity>_id`            FK name: `fk_<table>_<col>`
+#   • Index name    : `ix_<table>_<col>`       unique:  `ux_<table>_<col>`
+# =====================================================================
+
+# ─── Reusable column sets (anchors) ───────────────────────────────────
+x-audit: &audit
+  - column: { name: notes,                  type: VARCHAR(512) }
+  - column: { name: created_time,           type: DATETIME(6) }
+  - column: { name: last_modified_time,     type: DATETIME(6) }
+  - column: { name: deleted_time,           type: DATETIME(6) }
+  - column: { name: created_user_id,        type: BIGINT }
+  - column: { name: last_modified_user_id,  type: BIGINT }
+  - column: { name: deleted_user_id,        type: BIGINT }
+
+x-pk: &pk
+  column:
+    name: id
+    type: BIGINT
+    autoIncrement: true
+    constraints: { primaryKey: true, nullable: false }
+
+x-request-status: &request_status
+  - column: { name: status, type: SMALLINT, defaultValueNumeric: 0, constraints: { nullable: false } }
+  - column: { name: reason, type: VARCHAR(512) }
+
+databaseChangeLog:
+
+# =====================================================================
+# 01 — REFERENCE / LOOKUP TABLES
+# =====================================================================
+
+  - changeSet:
+      id: 1.0.0-001-language
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: language
+            columns:
+              - column: { name: code,  type: VARCHAR(8),  constraints: { primaryKey: true, nullable: false } }
+              - column: { name: name,  type: VARCHAR(64), constraints: { nullable: false } }
+              - column: { name: is_rtl, type: BOOLEAN, defaultValueBoolean: false, constraints: { nullable: false } }
+
+  - changeSet:
+      id: 1.0.0-002-qualification
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: qualification
+            columns:
+              - { <<: *pk }
+              - column: { name: code, type: VARCHAR(32),  constraints: { nullable: false, unique: true } }
+              - column: { name: name, type: VARCHAR(128), constraints: { nullable: false } }
+              - *audit
+
+  - changeSet:
+      id: 1.0.0-003-academic-year
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: academic_year
+            columns:
+              - column: { name: year, type: INT, constraints: { primaryKey: true, nullable: false } }
+              - column: { name: starts_on, type: DATE }
+              - column: { name: ends_on,   type: DATE }
+
+# =====================================================================
+# 02 — IDENTITY (User + RBAC)
+# =====================================================================
+
+  - changeSet:
+      id: 1.0.0-010-user
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: user
+            columns:
+              - { <<: *pk }
+              - column: { name: person_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: password,  type: VARCHAR(256), constraints: { nullable: false } }
+              - column: { name: is_email_verified,        type: BOOLEAN, defaultValueBoolean: false }
+              - column: { name: email_otp,                type: VARCHAR(16) }
+              - column: { name: email_token,              type: VARCHAR(256) }
+              - column: { name: email_otp_expiration,     type: DATETIME(6) }
+              - column: { name: email_token_expiration,   type: DATETIME(6) }
+              - column: { name: is_mobile_no_verified,    type: BOOLEAN, defaultValueBoolean: false }
+              - column: { name: mobile_no_otp,            type: VARCHAR(16) }
+              - column: { name: mobile_no_token,          type: VARCHAR(256) }
+              - column: { name: mobile_no_otp_expiration, type: DATETIME(6) }
+              - column: { name: mobile_no_token_expiration, type: DATETIME(6) }
+              - *audit
+        - createIndex:
+            tableName: user
+            indexName: ix_user_person_id
+            columns: [ { column: { name: person_id } } ]
+
+  - changeSet:
+      id: 1.0.0-011-rbac
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: role
+            columns:
+              - { <<: *pk }
+              - column: { name: code, type: VARCHAR(64),  constraints: { nullable: false, unique: true } }
+              - column: { name: name, type: VARCHAR(128), constraints: { nullable: false } }
+              - *audit
+        - createTable:
+            tableName: permission
+            columns:
+              - { <<: *pk }
+              - column: { name: code,        type: VARCHAR(128), constraints: { nullable: false, unique: true } }
+              - column: { name: description, type: VARCHAR(256) }
+        - createTable:
+            tableName: role_permission
+            columns:
+              - column: { name: role_id,       type: BIGINT, constraints: { nullable: false } }
+              - column: { name: permission_id, type: BIGINT, constraints: { nullable: false } }
+        - addPrimaryKey: { tableName: role_permission, columnNames: role_id, permission_id, constraintName: pk_role_permission }
+        - createTable:
+            tableName: user_role
+            columns:
+              - column: { name: user_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: role_id, type: BIGINT, constraints: { nullable: false } }
+        - addPrimaryKey: { tableName: user_role, columnNames: user_id, role_id, constraintName: pk_user_role }
+
+# =====================================================================
+# 03 — GEOGRAPHY
+# =====================================================================
+
+  - changeSet:
+      id: 1.0.0-020-geo
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: province
+            columns:
+              - { <<: *pk }
+              - column: { name: name, type: VARCHAR(128), constraints: { nullable: false } }
+              - *audit
+        - createTable:
+            tableName: district
+            columns:
+              - { <<: *pk }
+              - column: { name: name, type: VARCHAR(128), constraints: { nullable: false } }
+              - column: { name: province_id, type: BIGINT, constraints: { nullable: false } }
+              - *audit
+        - createTable:
+            tableName: zone
+            columns:
+              - { <<: *pk }
+              - column: { name: name, type: VARCHAR(128), constraints: { nullable: false } }
+              - column: { name: district_id, type: BIGINT, constraints: { nullable: false } }
+              - *audit
+        - createTable:
+            tableName: division
+            columns:
+              - { <<: *pk }
+              - column: { name: name, type: VARCHAR(128), constraints: { nullable: false } }
+              - column: { name: zone_id, type: BIGINT, constraints: { nullable: false } }
+              - *audit
+
+# =====================================================================
+# 04 — PEOPLE
+# =====================================================================
+
+  - changeSet:
+      id: 1.0.0-030-person
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: person
+            columns:
+              - { <<: *pk }
+              - column: { name: full_name,     type: VARCHAR(256), constraints: { nullable: false } }
+              - column: { name: short_name,    type: VARCHAR(64),  constraints: { nullable: false } }
+              - column: { name: nickname,      type: VARCHAR(64) }
+              - column: { name: date_of_birth, type: DATE }
+              - column: { name: bc_no,         type: VARCHAR(32) }
+              - column: { name: sex,           type: SMALLINT, defaultValueNumeric: 0 }
+              - column: { name: nic_no,        type: VARCHAR(32) }
+              - column: { name: passport_no,   type: VARCHAR(32) }
+              - column: { name: mobile_no,     type: VARCHAR(32) }
+              - column: { name: email,         type: VARCHAR(128) }
+              - column: { name: address,       type: VARCHAR(512) }
+              - column: { name: image,         type: VARCHAR(512) }
+              - *audit
+
+  - changeSet:
+      id: 1.0.0-031-person-links
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: person_relationship
+            columns:
+              - { <<: *pk }
+              - column: { name: person1_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: person2_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: relationship, type: SMALLINT, constraints: { nullable: false } }
+              - *audit
+        - createTable:
+            tableName: person_qualification
+            columns:
+              - { <<: *pk }
+              - column: { name: person_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: qualification_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: obtained_on, type: DATE }
+              - *audit
+
+  - changeSet:
+      id: 1.0.0-032-person-roles
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: student
+            columns:
+              - { <<: *pk }
+              - column: { name: person_id, type: BIGINT, constraints: { nullable: false } }
+              - *audit
+        - createTable:
+            tableName: teacher
+            columns:
+              - { <<: *pk }
+              - column: { name: person_id, type: BIGINT, constraints: { nullable: false } }
+              - *audit
+        - createTable:
+            tableName: principal
+            columns:
+              - { <<: *pk }
+              - column: { name: person_id, type: BIGINT, constraints: { nullable: false } }
+              - *audit
+
+# =====================================================================
+# 05 — SCHOOL & CLASS
+# =====================================================================
+
+  - changeSet:
+      id: 1.0.0-040-school
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: school
+            columns:
+              - { <<: *pk }
+              - column: { name: census_no, type: VARCHAR(32),  constraints: { nullable: false, unique: true } }
+              - column: { name: name,      type: VARCHAR(256), constraints: { nullable: false } }
+              - column: { name: location,  type: VARCHAR(256) }
+              - column: { name: address,   type: VARCHAR(512) }
+              - column: { name: email,     type: VARCHAR(128) }
+              - column: { name: phone_no,  type: VARCHAR(32) }
+              - column: { name: type,      type: SMALLINT, defaultValueNumeric: 0 }
+              - column: { name: division_id, type: BIGINT, constraints: { nullable: false } }
+              - *audit
+        - createTable:
+            tableName: class
+            columns:
+              - { <<: *pk }
+              - column: { name: grade,    type: SMALLINT, constraints: { nullable: false } }
+              - column: { name: section,  type: VARCHAR(16), constraints: { nullable: false } }
+              - column: { name: location, type: VARCHAR(128) }
+              - column: { name: school_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: language_code, type: VARCHAR(8), constraints: { nullable: false } }
+              - *audit
+
+# =====================================================================
+# 06 — ENROLLMENTS
+# =====================================================================
+
+  - changeSet:
+      id: 1.0.0-050-school-enrollment-requests
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: school_student_enrollment_request
+            columns:
+              - { <<: *pk }
+              - *request_status
+              - column: { name: grade, type: SMALLINT, constraints: { nullable: false } }
+              - column: { name: school_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: person_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: academic_year_year, type: INT, constraints: { nullable: false } }
+              - *audit
+        - createTable:
+            tableName: school_teacher_enrollment_request
+            columns:
+              - { <<: *pk }
+              - *request_status
+              - column: { name: school_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: person_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: academic_year_year, type: INT, constraints: { nullable: false } }
+              - *audit
+
+  - changeSet:
+      id: 1.0.0-051-school-enrollments
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: school_student_enrollment
+            columns:
+              - { <<: *pk }
+              - column: { name: no,     type: INT, constraints: { nullable: false } }
+              - column: { name: time,   type: DATETIME(6) }
+              - column: { name: status, type: SMALLINT, defaultValueNumeric: 0, constraints: { nullable: false } }
+              - column: { name: school_id,  type: BIGINT, constraints: { nullable: false } }
+              - column: { name: student_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: school_student_enrollment_request_id, type: BIGINT }
+              - *audit
+        - createTable:
+            tableName: school_teacher_enrollment
+            columns:
+              - { <<: *pk }
+              - column: { name: no,     type: INT, constraints: { nullable: false } }
+              - column: { name: time,   type: DATETIME(6) }
+              - column: { name: status, type: SMALLINT, defaultValueNumeric: 0, constraints: { nullable: false } }
+              - column: { name: school_id,  type: BIGINT, constraints: { nullable: false } }
+              - column: { name: teacher_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: school_teacher_enrollment_request_id, type: BIGINT }
+              - *audit
+        - createTable:
+            tableName: school_principal_enrollment
+            columns:
+              - { <<: *pk }
+              - column: { name: time,   type: DATETIME(6) }
+              - column: { name: status, type: SMALLINT, defaultValueNumeric: 0, constraints: { nullable: false } }
+              - column: { name: school_id,    type: BIGINT, constraints: { nullable: false } }
+              - column: { name: principal_id, type: BIGINT, constraints: { nullable: false } }
+              - *audit
+
+  - changeSet:
+      id: 1.0.0-052-class-enrollments
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: class_student_enrollment
+            columns:
+              - { <<: *pk }
+              - column: { name: roll_no, type: INT }
+              - column: { name: time, type: DATETIME(6) }
+              - column: { name: removed_time, type: DATETIME(6) }
+              - column: { name: remove_reason, type: VARCHAR(512) }
+              - column: { name: status, type: SMALLINT, defaultValueNumeric: 0, constraints: { nullable: false } }
+              - column: { name: class_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: school_student_enrollment_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: academic_year_year, type: INT, constraints: { nullable: false } }
+              - *audit
+        - createTable:
+            tableName: class_teacher_enrollment
+            columns:
+              - { <<: *pk }
+              - column: { name: time, type: DATETIME(6) }
+              - column: { name: status, type: SMALLINT, defaultValueNumeric: 0, constraints: { nullable: false } }
+              - column: { name: class_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: school_teacher_enrollment_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: academic_year_year, type: INT, constraints: { nullable: false } }
+              - *audit
+
+# =====================================================================
+# 07 — RESOURCE METADATA (drives the dynamic UI)
+# =====================================================================
+
+  - changeSet:
+      id: 1.0.0-060-resource
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: resource
+            columns:
+              - { <<: *pk }
+              - column: { name: key,        type: VARCHAR(64),  constraints: { nullable: false, unique: true } }
+              - column: { name: plural_key, type: VARCHAR(64),  constraints: { nullable: false } }
+              - column: { name: module,     type: VARCHAR(64) }
+              - column: { name: icon_key,   type: VARCHAR(64) }
+              - column: { name: label_key,  type: VARCHAR(128) }
+              - column: { name: is_system,  type: BOOLEAN, defaultValueBoolean: false }
+              - column: { name: sort_order, type: INT, defaultValueNumeric: 0 }
+              - *audit
+        - createTable:
+            tableName: resource_field
+            columns:
+              - { <<: *pk }
+              - column: { name: resource_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: key,         type: VARCHAR(64),  constraints: { nullable: false } }
+              - column: { name: label_key,   type: VARCHAR(128) }
+              - column: { name: type,        type: VARCHAR(32),  constraints: { nullable: false } }   # String|Int|Date|Enum|Ref|Money|Phone|...
+              - column: { name: ref_resource_key, type: VARCHAR(64) }
+              - column: { name: is_required, type: BOOLEAN, defaultValueBoolean: false }
+              - column: { name: is_unique,   type: BOOLEAN, defaultValueBoolean: false }
+              - column: { name: in_grid,     type: BOOLEAN, defaultValueBoolean: true }
+              - column: { name: in_form,     type: BOOLEAN, defaultValueBoolean: true }
+              - column: { name: validators_json, type: JSON }
+              - column: { name: display_json,    type: JSON }
+              - column: { name: visible_when,    type: VARCHAR(256) }
+              - column: { name: sort_order,  type: INT, defaultValueNumeric: 0 }
+        - addUniqueConstraint:
+            tableName: resource_field
+            columnNames: resource_id, key
+            constraintName: ux_resource_field
+        - createTable:
+            tableName: resource_action
+            columns:
+              - { <<: *pk }
+              - column: { name: resource_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: key,         type: VARCHAR(64), constraints: { nullable: false } }
+              - column: { name: label_key,   type: VARCHAR(128) }
+              - column: { name: icon_key,    type: VARCHAR(64) }
+              - column: { name: permission_code, type: VARCHAR(128) }
+              - column: { name: kind,        type: VARCHAR(16), defaultValue: row }   # row|bulk|global
+              - column: { name: form_json,   type: JSON }
+        - createTable:
+            tableName: resource_view
+            columns:
+              - { <<: *pk }
+              - column: { name: resource_id, type: BIGINT, constraints: { nullable: false } }
+              - column: { name: kind, type: VARCHAR(16), constraints: { nullable: false } }    # list|detail|form|report
+              - column: { name: name, type: VARCHAR(64), defaultValue: default, constraints: { nullable: false } }
+              - column: { name: definition_json, type: JSON, constraints: { nullable: false } }
+        - addUniqueConstraint:
+            tableName: resource_view
+            columnNames: resource_id, kind, name
+            constraintName: ux_resource_view
+        - createTable:
+            tableName: resource_relation
+            columns:
+              - { <<: *pk }
+              - column: { name: resource_id,           type: BIGINT, constraints: { nullable: false } }
+              - column: { name: target_resource_key,   type: VARCHAR(64), constraints: { nullable: false } }
+              - column: { name: kind,                  type: VARCHAR(16), constraints: { nullable: false } }   # one|many
+              - column: { name: foreign_key,           type: VARCHAR(64), constraints: { nullable: false } }
+              - column: { name: nav_label_key,         type: VARCHAR(128) }
+              - column: { name: show_in_detail,        type: BOOLEAN, defaultValueBoolean: true }
+
+  - changeSet:
+      id: 1.0.0-061-navigation
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: nav_node
+            columns:
+              - { <<: *pk }
+              - column: { name: parent_id,    type: BIGINT }
+              - column: { name: key,          type: VARCHAR(64),  constraints: { nullable: false, unique: true } }
+              - column: { name: label_key,    type: VARCHAR(128), constraints: { nullable: false } }
+              - column: { name: icon_key,     type: VARCHAR(64) }
+              - column: { name: resource_key, type: VARCHAR(64) }     # → /{plural}
+              - column: { name: route_path,   type: VARCHAR(256) }    # for static pages (dashboard, settings)
+              - column: { name: permission_code, type: VARCHAR(128) }
+              - column: { name: sort_order,   type: INT, defaultValueNumeric: 0 }
+              - column: { name: is_visible,   type: BOOLEAN, defaultValueBoolean: true }
+
+# =====================================================================
+# 08 — I18N (locales + translations)
+# =====================================================================
+
+  - changeSet:
+      id: 1.0.0-070-locale-translation
+      author: smartschool
+      changes:
+        - createTable:
+            tableName: locale
+            columns:
+              - column: { name: code, type: VARCHAR(8),  constraints: { primaryKey: true, nullable: false } }
+              - column: { name: name, type: VARCHAR(64), constraints: { nullable: false } }
+              - column: { name: native_name, type: VARCHAR(64) }
+              - column: { name: is_rtl, type: BOOLEAN, defaultValueBoolean: false, constraints: { nullable: false } }
+              - column: { name: is_enabled, type: BOOLEAN, defaultValueBoolean: true, constraints: { nullable: false } }
+              - column: { name: sort_order, type: INT, defaultValueNumeric: 0 }
+        - createTable:
+            tableName: translation
+            columns:
+              - { <<: *pk }
+              - column: { name: locale_code, type: VARCHAR(8),   constraints: { nullable: false } }
+              - column: { name: namespace,   type: VARCHAR(64),  defaultValue: common, constraints: { nullable: false } }
+              - column: { name: key,         type: VARCHAR(256), constraints: { nullable: false } }
+              - column: { name: value,       type: TEXT,         constraints: { nullable: false } }
+              - column: { name: last_modified_time, type: DATETIME(6) }
+        - addUniqueConstraint:
+            tableName: translation
+            columnNames: locale_code, namespace, key
+            constraintName: ux_translation
+
+# =====================================================================
+# 09 — FOREIGN KEYS (one pass, after all tables exist)
+# =====================================================================
+
+  - changeSet:
+      id: 1.0.0-080-foreign-keys
+      author: smartschool
+      changes:
+        # Geography
+        - addForeignKeyConstraint: { baseTableName: district, baseColumnNames: province_id, referencedTableName: province, referencedColumnNames: id, constraintName: fk_district_province_id }
+        - addForeignKeyConstraint: { baseTableName: zone,     baseColumnNames: district_id, referencedTableName: district, referencedColumnNames: id, constraintName: fk_zone_district_id }
+        - addForeignKeyConstraint: { baseTableName: division, baseColumnNames: zone_id,     referencedTableName: zone,     referencedColumnNames: id, constraintName: fk_division_zone_id }
+        # User ↔ Person
+        - addForeignKeyConstraint: { baseTableName: user,      baseColumnNames: person_id, referencedTableName: person, referencedColumnNames: id, constraintName: fk_user_person_id }
+        - addForeignKeyConstraint: { baseTableName: student,   baseColumnNames: person_id, referencedTableName: person, referencedColumnNames: id, constraintName: fk_student_person_id }
+        - addForeignKeyConstraint: { baseTableName: teacher,   baseColumnNames: person_id, referencedTableName: person, referencedColumnNames: id, constraintName: fk_teacher_person_id }
+        - addForeignKeyConstraint: { baseTableName: principal, baseColumnNames: person_id, referencedTableName: person, referencedColumnNames: id, constraintName: fk_principal_person_id }
+        # Person links
+        - addForeignKeyConstraint: { baseTableName: person_relationship,  baseColumnNames: person1_id,       referencedTableName: person,        referencedColumnNames: id, constraintName: fk_pr_person1_id }
+        - addForeignKeyConstraint: { baseTableName: person_relationship,  baseColumnNames: person2_id,       referencedTableName: person,        referencedColumnNames: id, constraintName: fk_pr_person2_id }
+        - addForeignKeyConstraint: { baseTableName: person_qualification, baseColumnNames: person_id,        referencedTableName: person,        referencedColumnNames: id, constraintName: fk_pq_person_id }
+        - addForeignKeyConstraint: { baseTableName: person_qualification, baseColumnNames: qualification_id, referencedTableName: qualification, referencedColumnNames: id, constraintName: fk_pq_qualification_id }
+        # School
+        - addForeignKeyConstraint: { baseTableName: school, baseColumnNames: division_id,   referencedTableName: division, referencedColumnNames: id,   constraintName: fk_school_division_id }
+        - addForeignKeyConstraint: { baseTableName: class,  baseColumnNames: school_id,     referencedTableName: school,   referencedColumnNames: id,   constraintName: fk_class_school_id }
+        - addForeignKeyConstraint: { baseTableName: class,  baseColumnNames: language_code, referencedTableName: language, referencedColumnNames: code, constraintName: fk_class_language_code }
+        # School enrollment requests
+        - addForeignKeyConstraint: { baseTableName: school_student_enrollment_request, baseColumnNames: school_id,           referencedTableName: school,        referencedColumnNames: id,   constraintName: fk_ssereq_school_id }
+        - addForeignKeyConstraint: { baseTableName: school_student_enrollment_request, baseColumnNames: person_id,           referencedTableName: person,        referencedColumnNames: id,   constraintName: fk_ssereq_person_id }
+        - addForeignKeyConstraint: { baseTableName: school_student_enrollment_request, baseColumnNames: academic_year_year,  referencedTableName: academic_year, referencedColumnNames: year, constraintName: fk_ssereq_year }
+        - addForeignKeyConstraint: { baseTableName: school_teacher_enrollment_request, baseColumnNames: school_id,           referencedTableName: school,        referencedColumnNames: id,   constraintName: fk_stereq_school_id }
+        - addForeignKeyConstraint: { baseTableName: school_teacher_enrollment_request, baseColumnNames: person_id,           referencedTableName: person,        referencedColumnNames: id,   constraintName: fk_stereq_person_id }
+        - addForeignKeyConstraint: { baseTableName: school_teacher_enrollment_request, baseColumnNames: academic_year_year,  referencedTableName: academic_year, referencedColumnNames: year, constraintName: fk_stereq_year }
+        # School enrollments
+        - addForeignKeyConstraint: { baseTableName: school_student_enrollment, baseColumnNames: school_id,  referencedTableName: school,  referencedColumnNames: id, constraintName: fk_sse_school_id }
+        - addForeignKeyConstraint: { baseTableName: school_student_enrollment, baseColumnNames: student_id, referencedTableName: student, referencedColumnNames: id, constraintName: fk_sse_student_id }
+        - addForeignKeyConstraint: { baseTableName: school_student_enrollment, baseColumnNames: school_student_enrollment_request_id, referencedTableName: school_student_enrollment_request, referencedColumnNames: id, constraintName: fk_sse_request_id }
+        - addForeignKeyConstraint: { baseTableName: school_teacher_enrollment, baseColumnNames: school_id,  referencedTableName: school,  referencedColumnNames: id, constraintName: fk_ste_school_id }
+        - addForeignKeyConstraint: { baseTableName: school_teacher_enrollment, baseColumnNames: teacher_id, referencedTableName: teacher, referencedColumnNames: id, constraintName: fk_ste_teacher_id }
+        - addForeignKeyConstraint: { baseTableName: school_teacher_enrollment, baseColumnNames: school_teacher_enrollment_request_id, referencedTableName: school_teacher_enrollment_request, referencedColumnNames: id, constraintName: fk_ste_request_id }
+        - addForeignKeyConstraint: { baseTableName: school_principal_enrollment, baseColumnNames: school_id,    referencedTableName: school,    referencedColumnNames: id, constraintName: fk_spe_school_id }
+        - addForeignKeyConstraint: { baseTableName: school_principal_enrollment, baseColumnNames: principal_id, referencedTableName: principal, referencedColumnNames: id, constraintName: fk_spe_principal_id }
+        # Class enrollments
+        - addForeignKeyConstraint: { baseTableName: class_student_enrollment, baseColumnNames: class_id,                       referencedTableName: class,                       referencedColumnNames: id,   constraintName: fk_cse_class_id }
+        - addForeignKeyConstraint: { baseTableName: class_student_enrollment, baseColumnNames: school_student_enrollment_id,   referencedTableName: school_student_enrollment,   referencedColumnNames: id,   constraintName: fk_cse_sse_id }
+        - addForeignKeyConstraint: { baseTableName: class_student_enrollment, baseColumnNames: academic_year_year,             referencedTableName: academic_year,               referencedColumnNames: year, constraintName: fk_cse_year }
+        - addForeignKeyConstraint: { baseTableName: class_teacher_enrollment, baseColumnNames: class_id,                       referencedTableName: class,                       referencedColumnNames: id,   constraintName: fk_cte_class_id }
+        - addForeignKeyConstraint: { baseTableName: class_teacher_enrollment, baseColumnNames: school_teacher_enrollment_id,   referencedTableName: school_teacher_enrollment,   referencedColumnNames: id,   constraintName: fk_cte_ste_id }
+        - addForeignKeyConstraint: { baseTableName: class_teacher_enrollment, baseColumnNames: academic_year_year,             referencedTableName: academic_year,               referencedColumnNames: year, constraintName: fk_cte_year }
+        # RBAC
+        - addForeignKeyConstraint: { baseTableName: role_permission, baseColumnNames: role_id,       referencedTableName: role,       referencedColumnNames: id, constraintName: fk_rp_role_id,       onDelete: CASCADE }
+        - addForeignKeyConstraint: { baseTableName: role_permission, baseColumnNames: permission_id, referencedTableName: permission, referencedColumnNames: id, constraintName: fk_rp_permission_id, onDelete: CASCADE }
+        - addForeignKeyConstraint: { baseTableName: user_role,       baseColumnNames: user_id,       referencedTableName: user,       referencedColumnNames: id, constraintName: fk_ur_user_id,       onDelete: CASCADE }
+        - addForeignKeyConstraint: { baseTableName: user_role,       baseColumnNames: role_id,       referencedTableName: role,       referencedColumnNames: id, constraintName: fk_ur_role_id,       onDelete: CASCADE }
+        # Resource metadata
+        - addForeignKeyConstraint: { baseTableName: resource_field,    baseColumnNames: resource_id, referencedTableName: resource, referencedColumnNames: id, constraintName: fk_rf_resource_id, onDelete: CASCADE }
+        - addForeignKeyConstraint: { baseTableName: resource_action,   baseColumnNames: resource_id, referencedTableName: resource, referencedColumnNames: id, constraintName: fk_ra_resource_id, onDelete: CASCADE }
+        - addForeignKeyConstraint: { baseTableName: resource_view,     baseColumnNames: resource_id, referencedTableName: resource, referencedColumnNames: id, constraintName: fk_rv_resource_id, onDelete: CASCADE }
+        - addForeignKeyConstraint: { baseTableName: resource_relation, baseColumnNames: resource_id, referencedTableName: resource, referencedColumnNames: id, constraintName: fk_rr_resource_id, onDelete: CASCADE }
+        - addForeignKeyConstraint: { baseTableName: nav_node, baseColumnNames: parent_id, referencedTableName: nav_node, referencedColumnNames: id, constraintName: fk_nav_node_parent_id }
+        # i18n
+        - addForeignKeyConstraint: { baseTableName: translation, baseColumnNames: locale_code, referencedTableName: locale, referencedColumnNames: code, constraintName: fk_translation_locale_code, onDelete: CASCADE }
+
+# =====================================================================
+# 99 — SEED DATA (idempotent via loadUpdateData + runOnChange)
+# =====================================================================
+
+  - changeSet:
+      id: 1.0.0-099-seed-locale
+      author: smartschool
+      runOnChange: true
+      changes:
+        - loadUpdateData: { tableName: locale,      primaryKey: code,                       file: seed/locale.csv,      relativeToChangelogFile: true }
+
+  - changeSet:
+      id: 1.0.0-099-seed-language
+      author: smartschool
+      runOnChange: true
+      changes:
+        - loadUpdateData: { tableName: language,    primaryKey: code,                       file: seed/language.csv,    relativeToChangelogFile: true }
+
+  - changeSet:
+      id: 1.0.0-099-seed-permission
+      author: smartschool
+      runOnChange: true
+      changes:
+        - loadUpdateData: { tableName: permission,  primaryKey: code,                       file: seed/permission.csv,  relativeToChangelogFile: true }
+
+  - changeSet:
+      id: 1.0.0-099-seed-role
+      author: smartschool
+      runOnChange: true
+      changes:
+        - loadUpdateData: { tableName: role,        primaryKey: code,                       file: seed/role.csv,        relativeToChangelogFile: true }
+
+  - changeSet:
+      id: 1.0.0-099-seed-translation
+      author: smartschool
+      runOnChange: true
+      changes:
+        - loadUpdateData: { tableName: translation, primaryKey: locale_code,namespace,key,  file: seed/translation.csv, relativeToChangelogFile: true }

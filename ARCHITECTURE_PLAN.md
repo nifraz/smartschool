@@ -42,11 +42,13 @@
 ### 2.1 Guiding Principles
 1. **Resource-Centric** — every domain concept (School, Student, Class, …) is a *Resource* described by **server-owned metadata**.
 2. **Backend-Driven UI** — navigation, grid columns, form fields, validators, actions, permissions, and labels are emitted by the API; the GUI renders them.
-3. **Single Source of Truth** — C# entity attributes + a `ResourceDescriptor` generate GraphQL schema, REST endpoints, OpenAPI, TS types (codegen), and UI metadata.
-4. **Performant** — server projections, DataLoader batching, Apollo normalized cache, persisted queries, route-level lazy loading, SSR with transfer state.
-5. **Modular** — feature modules on both sides; pluggable resource modules on the backend; lazy Angular standalone routes resolved at runtime.
-6. **Modern** — Angular 18 LTS, Signals, standalone components, Control Flow, `@defer`, HotChocolate 14, .NET 8/9, EF Core 8.
-7. **Localizable** — Arabic (RTL), Tamil, Sinhala, English from day one. All user-facing strings come from the backend `Translation` table.
+3. **One way to do everything (DRY)** — generic CRUD resolver, generic Angular renderer, YAML anchors in DB migrations. Repetition is a bug.
+4. **Flat URL contract** — every page is `/<resource>` or `/<resource>/:id`. No nested paths, ever.
+5. **Single Source of Truth** — Liquibase YAML owns the DB; C# entities + a `ResourceDescriptor` generate GraphQL schema, REST endpoints, OpenAPI, TS types, and UI metadata.
+6. **Performant** — server projections, DataLoader batching, Apollo normalized cache, persisted queries, route-level lazy loading, SSR with transfer state.
+7. **Modular** — feature modules on both sides; pluggable resource modules on the backend; lazy Angular standalone routes resolved at runtime.
+8. **Modern** — Angular 18 LTS, Signals, standalone components, Control Flow, `@defer`, HotChocolate 14, .NET 8/9, EF Core 8, Liquibase 4.
+9. **Localizable** — Arabic (RTL), Tamil, Sinhala, English from day one. All user-facing strings come from the backend `translation` table.
 
 ### 2.2 High-Level Diagram
 ```
@@ -166,12 +168,73 @@ Per-entity files are deleted; specialized logic moves into **`I*Policy`** + **`I
 - Per-resource policies via `IAuthorizationHandler` driven by `Permission` codes.
 
 ### 3.8 Migration Steps (Backend)
-1. Add `SmartSchool.Resources` + attribute scanner; expose `resources`/`navigation` queries (no behavior change yet).
-2. Add `Locale`/`Translation` tables + seed; expose `translations` query.
-3. Replace `UserRole` enum with full RBAC tables (migration with data backfill).
-4. Implement generic CRUD; route old `*Query`/`*Mutation` calls through it; deprecate originals.
-5. Remove deprecated files; tighten schema.
-6. Add caching, persisted queries, OTel, compression.
+1. **Adopt Liquibase** as the schema owner (see §3.9). Generate the v1.0.0 baseline from the current EF model; switch EF to **database-first / no-migrations** mode.
+2. Add `SmartSchool.Resources` + attribute scanner; expose `resources`/`navigation` queries (no behavior change yet).
+3. Locale/Translation tables are already in the baseline; expose `translations` query.
+4. Replace `UserRole` enum with the new RBAC tables (already created); backfill data in a Liquibase changeset.
+5. Implement generic CRUD; route old `*Query`/`*Mutation` calls through it; deprecate originals.
+6. Remove deprecated files; tighten schema.
+7. Add caching, persisted queries, OTel, compression.
+
+### 3.9 Database Migrations — Liquibase (YAML)
+
+Schema is owned by **Liquibase**, not EF migrations. EF Core is configured for **runtime queries only**; the database is the single source of truth and can be evolved independently of the .NET build.
+
+```
+smartschool-svc/db/
+├─ liquibase.properties              # local connection (env vars override)
+└─ changelog/
+   ├─ db.changelog-master.yaml       # entry point; includes every release
+   └─ releases/
+      ├─ v1.0.0.yaml                 # baseline (DRY via YAML anchors)
+      └─ seed/                       # CSV seeds via loadUpdateData
+         ├─ locale.csv  language.csv  permission.csv  role.csv  translation.csv
+```
+
+**DRY mechanism** — YAML anchors at the top of each release file:
+```yaml
+x-audit: &audit
+  - column: { name: notes,                 type: VARCHAR(512) }
+  - column: { name: created_time,          type: DATETIME(6) }
+  - column: { name: last_modified_time,    type: DATETIME(6) }
+  - column: { name: deleted_time,          type: DATETIME(6) }
+  - column: { name: created_user_id,       type: BIGINT }
+  - column: { name: last_modified_user_id, type: BIGINT }
+  - column: { name: deleted_user_id,       type: BIGINT }
+
+x-pk: &pk
+  column: { name: id, type: BIGINT, autoIncrement: true, constraints: { primaryKey: true, nullable: false } }
+```
+Every table reuses them:
+```yaml
+- createTable:
+    tableName: school
+    columns:
+      - { <<: *pk }
+      - column: { name: name, type: VARCHAR(256), constraints: { nullable: false } }
+      # ...
+      - *audit
+```
+
+**Conventions**
+
+| Concern | Rule |
+|---|---|
+| PK | `id BIGINT AUTO_INCREMENT` (lookups: `code VARCHAR(8|32)`) |
+| Audit | 7 columns appended via `*audit` anchor |
+| FK column / constraint | `<entity>_id` / `fk_<table>_<col>` |
+| Index | `ix_<table>_<col>` · unique `ux_<table>_<col>` |
+| ChangeSet id | `<version>-<NNN>-<slug>` (e.g. `1.0.0-040-school`) |
+| Foreign keys | grouped into a single `*-080-foreign-keys` changeset per release |
+| Seed | CSV + `loadUpdateData` + `runOnChange: true` (idempotent) |
+| Immutability | NEVER edit a deployed changeset — add a new release file |
+
+**Commands**
+```powershell
+liquibase --defaults-file db/liquibase.properties update
+liquibase --defaults-file db/liquibase.properties status
+liquibase --defaults-file db/liquibase.properties rollback-count 1
+```
 
 ---
 
@@ -197,25 +260,32 @@ Per-entity files are deleted; specialized logic moves into **`I*Policy`** + **`I
 | `ssHasPermission` directive | `*ssHasPermission="'school:update'"` → server-evaluated. |
 | `PermissionService` | Reactive permission set; updates on login/role change. |
 
-### 4.3 Routing — From Static to Dynamic
-Replace 100% of `app.routes.ts` with:
+### 4.3 Routing — Pure `:resource/:id` Convention
+**Hard rule:** every URL is `/<resource>` or `/<resource>/:id`. Nothing else. Relations are query/state, not route segments. This collapses ~30 hand-written routes into **2 generic ones**.
+
 ```ts
+// app.routes.ts (final, complete file)
 export const routes: Routes = [
-  { path: 'auth', loadChildren: () => import('./auth/auth.routes') },
+  { path: 'auth', loadChildren: () => import('./auth/auth.routes').then(m => m.routes) },
   {
     path: '',
     canActivate: [authGuard],
-    resolve: { _: bootstrapResolver }, // loads resources + i18n
+    resolve: { _bootstrap: bootstrapResolver },     // loads resources + permissions + i18n
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
-      { path: 'dashboard', loadComponent: () => import('./dashboard/dashboard.component') },
-      { path: '**', loadChildren: () => import('@smartschool/resource-engine').then(m => m.dynamicRoutes()) },
+      { path: '',          pathMatch: 'full', redirectTo: 'dashboard' },
+      { path: 'dashboard', loadComponent: () => import('./pages/dashboard/dashboard.component') },
+      // ── The entire app, dynamically ──
+      { path: ':resource',     loadComponent: () => import('@smartschool/resource-engine').then(m => m.ResourceListPage),   canMatch: [resourceExistsMatch] },
+      { path: ':resource/:id', loadComponent: () => import('@smartschool/resource-engine').then(m => m.ResourceDetailPage), canMatch: [resourceExistsMatch] },
+      { path: '**', loadComponent: () => import('./pages/not-found/not-found.component') },
     ],
   },
 ];
 ```
-`dynamicRoutes()` reads the registry and produces per-resource routes:
-`/{pluralKey}`, `/{pluralKey}/:id`, `/{pluralKey}/:id/{relation}`, `/{pluralKey}/:id/{relation}/:relId`, etc.
+
+- `resourceExistsMatch` looks up the `:resource` segment in the `ResourceRegistryService` (loaded once at bootstrap). Unknown resources fall through to 404.
+- `ResourceDetailPage` reads `Resource.views.detail.tabs[]` — *related lists, sub-forms, history* — all rendered inside the detail page. **Drill-downs into related items just navigate to `/<relatedResource>/<id>`**, not nested URLs.
+- Result: adding a new entity = inserting one row in `resource` (+ rows in `resource_field`, `resource_view`). Zero route edits.
 
 ### 4.4 Localization
 - Adopt **`@angular/localize`** *or* **`@ngx-translate/core`** (recommend ngx-translate for runtime locale switch).

@@ -1,0 +1,166 @@
+<mat-progress-bar *ngIf="isLoading" mode="query"></mat-progress-bar>
+<div *ngIf="isLoading || record; then content else notFound"></div>
+
+<ng-template #content>
+    <h2 class="mat-h2 m-0 ms-2">School Details</h2>
+    <div *ngIf="record" class="container mt-4">
+        <div class="row">
+            <!-- Main Info Section -->
+            <div class="col-12 col-md-12 mb-4 text-center mb-4">
+                <img src="assets/images/icons8_school_200px.png" alt="{{ record.name }}" class="rounded-circle" width="200" height="200">
+                <h2 class="mt-3">{{ record.name }}</h2>
+                <p class="text-muted">
+                    {{ record.censusNo }} | {{ record.type | titleCaseWithSpace }}
+                </p>
+                <div class="">
+                    @if (((authService.loggedInUser?.principalId || authService.loggedInUser?.teacherId) && authService.loggedInUser?.currentSchoolId == record.id) || authService.loggedInUser?.id == record.createdUserId) {
+                        <button class="btn btn-sm btn-primary me-2" (click)="editRecord()">
+                            <i class="bi bi-pencil"></i>
+                            Edit
+                        </button>
+                    }
+                    @if (authService.loggedInUser) {
+                        <button class="btn btn-sm btn-primary me-2" (click)="viewReport()">
+                            <i class="bi bi-file-earmark-text"></i>
+                            School Report
+                        </button>
+                    }
+                    <!-- @if (authService.loggedInUser?.principalId) {
+                        <button class="btn btn-sm btn-danger me-2" (click)="deleteRecord()">
+                            <i class="bi bi-trash"></i>
+                            Delete
+                        </button>
+                    } -->
+                </div>
+            </div>
+
+            
+            <!-- Academic Info Section -->
+            <!-- <div class="col-12 col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between">
+                            <div class="card-title">
+                                <i class="bi bi-book"></i> Academic Info
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                    </div>
+                </div>
+            </div> -->
+
+            <!-- Classes Section -->
+            <div class="col-12 col-md-6 mb-4">
+                <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between">
+                        <div class="card-title">
+                            <i class="bi bi-journal"></i> Classes
+                        </div>
+                        <div>
+                            @if (authService.loggedInUser?.principalId && authService.loggedInUser?.currentSchoolId == record.id) {
+                                <button type="button" title="New" class="btn btn-sm btn-primary" (click)="createClass()">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div *ngFor="let gradeGroup of groupByToArrays(record.allClasses, 'grade')">
+                        <p>{{ gradeGroup[0].grade | titleCaseWithSpace }}</p>
+                        @for (class of gradeGroup; track $index) {
+                            <p>
+                                <i class="bi bi-card-text"></i>&nbsp;
+                                <a [routerLink]="['/schools', class.schoolId, 'classes', class.id ]">{{ class.grade | titleCaseWithSpace }}&nbsp;{{ class.section }}</a>&nbsp;({{ class.language?.name }})
+                            </p>
+                        }
+                    </div>
+                </div>
+                </div>
+            </div>
+
+            <!-- Admission Details Section -->
+            <div class="col-12 col-md-6 mb-4">
+                <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between">
+                        <div class="card-title">
+                            <i class="bi bi-journal"></i> Student Enrollment Requests
+                        </div>
+                        <div>
+                            @if (authService.loggedInUser) {
+                                <button type="button" title="New" class="btn btn-sm btn-primary" (click)="createSchoolStudentEnrollmentRequest()">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (record.recentSchoolStudentEnrollmentRequests.length) {
+                        <p>Showing latest 10 records (<a [routerLink]="['/schools', record.id, 'student-enrollment-requests']">View all</a>)</p>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Grade</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (item of record.recentSchoolStudentEnrollmentRequests; track $index) {
+                                    <tr>
+                                        <th scope="row"><a [routerLink]="['/persons', item.person?.id]">{{ item.person?.fullName }}</a></th>
+                                        <td>{{ item.grade | titleCaseWithSpace }}</td>
+                                        <td>{{ item.status | titleCaseWithSpace }}</td>
+                                        <td><a [routerLink]="['/schools', record.id, 'student-enrollment-requests', item.id ]">View</a></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    @else {
+                        <p>No records found.</p>
+                    }
+                </div>
+                </div>
+            </div>
+  
+            <!-- Contact Info Section -->
+            <div class="col-12 col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between">
+                            <div class="card-title">
+                                <i class="bi bi-telephone"></i> Contact Info
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p *ngIf="record.phoneNo">
+                            <i class="bi bi-phone"></i>
+                            <a href="tel:{{ record.phoneNo }}">
+                                {{ record.phoneNo }}
+                            </a>
+                        </p>
+                        <p *ngIf="record.email">
+                            <i class="bi bi-envelope"></i>
+                            <a href="mailto:{{ record.email }}">
+                                {{ record.email }}
+                            </a>
+                        </p>
+                        <p *ngIf="record.address"><i class="bi bi-geo-alt"></i> {{ record.address }}</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #notFound>
+    <app-not-found></app-not-found>
+</ng-template>

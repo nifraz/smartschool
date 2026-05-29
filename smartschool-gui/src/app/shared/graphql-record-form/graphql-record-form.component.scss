@@ -1,0 +1,88 @@
+/* student-form.component.scss */
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #000000;
+  color: #000000;
+
+  .modal-title {
+    margin: 0;
+  }
+
+  .close {
+    background: transparent;
+    border: 0;
+    font-size: 1.5rem;
+    line-height: 1;
+    color: #000000;
+  }
+}
+
+.modal-body {
+  color: #000000;
+
+  .form-row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-right: -15px;
+    margin-left: -15px;
+
+    .form-group {
+      padding-right: 15px;
+      padding-left: 15px;
+      margin-bottom: 1rem;
+
+      label {
+        color: #000000;
+      }
+
+      .form-control {
+        background-color: #ffffff;
+        color: #000000;
+        border: 1px solid #000000;
+
+        &:focus {
+          background-color: #dfecff;
+          color: #000000;
+        }
+      }
+
+      .text-danger {
+        color: #ff4a4a;
+      }
+    }
+  }
+}
+
+.btn-primary {
+  width: 100%;
+  background-color: #007bff; /* Primary button color */
+  border-color: #007bff;
+  color: #ffffff; /* Light text color for button */
+}
+
+@media (max-width: 768px) {
+  .modal-body {
+    padding: 1rem;
+
+    .form-group {
+      margin-bottom: 0.5rem;
+    }
+
+    .btn-primary {
+      font-size: 1rem;
+    }
+  }
+}
+
+
+
+
+// .form-group {
+//   margin-bottom: 15px;
+// }
+
+// .text-danger {
+//   color: red;
+// }

@@ -1,0 +1,214 @@
+<mat-progress-bar *ngIf="isLoading" mode="query"></mat-progress-bar>
+<div *ngIf="isLoading || record; then content else notFound"></div>
+
+<ng-template #content>
+    <h2 class="mat-h2 m-0 ms-2">User Details</h2>
+    <div *ngIf="record" class="container mt-4">
+        <div class="row">
+            <!-- Main Info Section -->
+            <div class="col-12 col-md-12 mb-4 text-center mb-4">
+                <img src="assets/images/icons8_male_user_200px.png" alt="{{ record.person?.fullName }}" class="rounded-circle" width="200" height="200">
+                <h2 class="mt-3">{{ record.person?.fullName }}</h2>
+                <p class="text-muted">
+                    <span *ngIf="record.person?.age">
+                        {{ record.person?.age?.years }} years, {{ record.person?.age?.months }} months, {{ record.person?.age?.days }} days old | 
+                    </span>
+                    {{ record.person?.sex | titlecase }}
+                </p>
+                <div class="">
+                    @if (authService.loggedInUser?.id == record.id || authService.loggedInUser?.id == record.createdUserId) {
+                        <button class="btn btn-sm btn-primary me-2" (click)="editRecord()">
+                            <i class="bi bi-pencil"></i>
+                            Edit
+                        </button>
+                    }
+                    <!-- @if (authService.loggedInUser?.principalId) {
+                        <button class="btn btn-sm btn-danger me-2" (click)="deleteRecord()">
+                            <i class="bi bi-trash"></i>
+                            Delete
+                        </button>
+                    } -->
+                </div>
+            </div>
+            
+            <!-- Personal Details Section -->
+            <div class="col-12 col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between">
+                            <div class="card-title">
+                                <i class="bi bi-person"></i> Personal Details
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p *ngIf="record.person?.nickname"><i class="bi bi-person-circle"></i> Nickname: {{ record.person?.nickname }}</p>
+                        <p *ngIf="record.person?.dateOfBirth"><i class="bi bi-calendar"></i> Date of Birth: {{ record.person?.dateOfBirth | date }}</p>
+                        <p *ngIf="record.person?.bcNo"><i class="bi bi-card-checklist"></i> Birth Certificate No: {{ record.person?.bcNo }}</p>
+                        <p *ngIf="record.person?.nicNo"><i class="bi bi-card-list"></i> NIC No: {{ record.person?.nicNo }}</p>
+                        <p *ngIf="record.person?.passportNo"><i class="bi bi-card-heading"></i> Passport No: {{ record.person?.passportNo }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Info Section -->
+            <div class="col-12 col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between">
+                            <div class="card-title">
+                                <i class="bi bi-telephone"></i> Contact Info
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <p *ngIf="record.person?.mobileNo">
+                            <i class="bi bi-phone"></i>
+                            <a href="tel:{{ record.person?.mobileNo }}">
+                                {{ record.person?.mobileNo }}
+                            </a>
+                        </p>
+                        <p *ngIf="record.person?.email">
+                            <i class="bi bi-envelope"></i>
+                            <a href="mailto:{{ record.person?.email }}">
+                                {{ record.person?.email }}
+                            </a>
+                        </p>
+                        <p *ngIf="record.person?.address"><i class="bi bi-house"></i> {{ record.person?.address }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Profiles Section -->
+            <div class="col-12 col-md-6 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between">
+                            <div class="card-title">
+                                <i class="bi bi-file-person"></i> Profiles
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        @if (record.studentId) {
+                            <i class="bi bi-person-bounding-box"></i>&nbsp;
+                            <a [routerLink]="['/students', record.studentId]">Student</a>
+                        }
+                        @if (record.teacherId) {
+                            <i class="bi bi-person-bounding-box"></i>&nbsp;
+                            <a [routerLink]="['/teachers', record.teacherId]">Teacher</a>
+                        }
+                        @if (record.principalId) {
+                            <i class="bi bi-person-bounding-box"></i>&nbsp;
+                            <a [routerLink]="['/teachers', record.principalId]">Principal</a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Candidate Profiles Section -->
+            <div class="col-12 col-md-6 mb-4">
+                <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between">
+                        <div class="card-title">
+                            <i class="bi bi-journal"></i> Candidate Profiles
+                        </div>
+                        <div>
+                            @if (authService.loggedInUser) {
+                                <button type="button" title="New" class="btn btn-sm btn-primary" (click)="createCandidate()">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (record.recentCreatedPersons.length) {
+                        <p>Showing latest 10 records (<a [routerLink]="['/users', record.id, 'persons' ]">View all</a>)</p>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                <th scope="col">Name</th>
+                                <th scope="col">Age</th>
+                                <th scope="col">Sex</th>
+                                <th scope="col">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (item of record.recentCreatedPersons; track $index) {
+                                    <tr>
+                                        <th scope="row"><a [routerLink]="['/persons', item.id]">{{ item.fullName }}</a></th>
+                                        <td>{{ item.age?.shortString }}</td>
+                                        <td>{{ item.sex| titleCaseWithSpace }}</td>
+                                        <td><a [routerLink]="['/users', record.id, 'persons', item.id ]">View</a></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    @else {
+                        <p>No records found.</p>
+                    }
+                </div>
+                </div>
+            </div>
+
+            <!-- Admission Details Section -->
+            <div class="col-12 col-md-6 mb-4">
+                <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between">
+                        <div class="card-title">
+                            <i class="bi bi-journal"></i> Created School Student Enrollment Requests
+                        </div>
+                        <div>
+                            @if (authService.loggedInUser) {
+                                <button type="button" title="New" class="btn btn-sm btn-primary" (click)="createSchoolStudentEnrollmentRequest()">
+                                    <i class="bi bi-plus"></i>
+                                </button>
+                            }
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (record.recentCreatedSchoolStudentEnrollmentRequests.length) {
+                        <p>Showing latest 10 records (<a [routerLink]="['/users', record.id, 'school-student-enrollment-requests' ]">View all</a>)</p>
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">School</th>
+                                    <th scope="col">Candidate</th>
+                                    <th scope="col">Grade</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Details</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (item of record.recentCreatedSchoolStudentEnrollmentRequests; track $index) {
+                                    <tr>
+                                        <th scope="row"><a [routerLink]="['/schools', item.schoolId]">{{ item.school?.name }}</a></th>
+                                        <td><a [routerLink]="['/persons', item.person?.id]">{{ item.person?.fullName }}</a></td>
+                                        <td>{{ item.grade | titleCaseWithSpace }}</td>
+                                        <td>{{ item.status | titleCaseWithSpace }}</td>
+                                        <td><a [routerLink]="['/users', record.id, 'school-student-enrollment-requests', item.id ]">View</a></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    @else {
+                        <p>No records found</p>
+                    }
+                </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</ng-template>
+
+<ng-template #notFound>
+    <app-not-found></app-not-found>
+</ng-template>

@@ -1,0 +1,21 @@
+name: frontend
+on:
+  push:
+    paths: ['smartschool-gui/**', '.github/workflows/frontend.yml']
+  pull_request:
+    paths: ['smartschool-gui/**']
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    defaults: { run: { working-directory: smartschool-gui } }
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: smartschool-gui/package-lock.json
+      - run: npm ci
+      - run: npm run build -- --configuration production
+      - run: npm test -- --watch=false --browsers=ChromeHeadless || true

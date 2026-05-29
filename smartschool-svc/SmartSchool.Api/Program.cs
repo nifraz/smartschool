@@ -12,7 +12,9 @@ using SmartSchool.Graphql.Models;
 using SmartSchool.Graphql.Mutations;
 using SmartSchool.Graphql.Queries;
 using SmartSchool.Graphql.Subscriptions;
+using SmartSchool.Resources;
 using SmartSchool.Schema;
+using SmartSchool.Schema.Entities;
 using SmartSchool.Service.Models.Settings;
 using SmartSchool.Service.Services;
 using SmartSchool.Utility.Helpers;
@@ -79,16 +81,28 @@ builder.Services
     .AddTypeExtension<StudentsQuery>()
     .AddTypeExtension<TeachersQuery>()
     .AddTypeExtension<SchoolsQuery>()
+    .AddTypeExtension<ResourcesQuery>()
+    .AddTypeExtension<NavigationQuery>()
+    .AddTypeExtension<TranslationsQuery>()
     .AddMutationType<Mutation>()
     .AddTypeExtension<PersonMutation>()
     .AddTypeExtension<StudentMutation>()
     .AddTypeExtension<TeacherMutation>()
     .AddTypeExtension<SchoolMutation>()
+    .AddTypeExtension<GenericMutation>()
     .AddInMemorySubscriptions()
     .AddSubscriptionType<SchoolSubscription>()
     .AddProjections()
     .AddFiltering()
     .AddSorting();
+
+// ── Resource registry (scans Schema for [Resource]-annotated entities) ──
+var resourceRegistry = new ResourceRegistry();
+resourceRegistry.Initialize(typeof(AbstractRecord).Assembly);
+builder.Services.AddSingleton(resourceRegistry);
+
+builder.Services.AddResponseCompression();
+builder.Services.AddHealthChecks();
 
 builder.Services.AddScoped<PersonBatchDataLoader>();
 builder.Services.AddHttpContextAccessor();
@@ -116,6 +130,9 @@ else
 
 app.UseRouting();
 app.UseWebSockets();
+app.UseResponseCompression();
+app.MapHealthChecks("/healthz");
+app.MapHealthChecks("/readyz");
 app.MapControllers();
 app.MapGraphQL();
 

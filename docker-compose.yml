@@ -1,0 +1,45 @@
+services:
+  mariadb:
+    image: mariadb:11.4
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: root
+      MARIADB_DATABASE: smartschool
+    ports: ["3306:3306"]
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+  liquibase:
+    image: liquibase/liquibase:4.29
+    depends_on:
+      mariadb: { condition: service_healthy }
+    environment:
+      LIQUIBASE_COMMAND_URL: jdbc:mariadb://mariadb:3306/smartschool
+      LIQUIBASE_COMMAND_USERNAME: root
+      LIQUIBASE_COMMAND_PASSWORD: root
+      LIQUIBASE_COMMAND_CHANGELOG_FILE: changelog/db.changelog-master.yaml
+    volumes:
+      - ./smartschool-svc/db:/liquibase/changelog
+    command: ["--search-path=/liquibase/changelog", "update"]
+
+  svc:
+    build: ./smartschool-svc
+    depends_on:
+      liquibase: { condition: service_completed_successfully }
+    environment:
+      ConnectionStrings__MariaDbConnection: "Server=mariadb;Port=3306;Database=smartschool;User=root;Password=root;"
+      ASPNETCORE_ENVIRONMENT: Development
+    ports: ["5000:5000"]
+
+  gui:
+    build: ./smartschool-gui
+    depends_on: [svc]
+    ports: ["4200:80"]
+
+volumes:
+  mariadb_data: {}

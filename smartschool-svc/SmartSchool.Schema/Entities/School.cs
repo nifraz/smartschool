@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartSchool.Schema.Enums;
+using SmartSchool.Schema.Resources;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -12,14 +13,28 @@ using System.Threading.Tasks;
 namespace SmartSchool.Schema.Entities
 {
     [Index(nameof(CensusNo), IsUnique = true)]
+    [Resource("school", Plural = "schools", Module = "academic", Icon = "mat:school", Label = "School", SortOrder = 10)]
     public class School : AbstractRecord
     {
+        [Field(Label = "Census No", Required = true, Unique = true, SortOrder = 1)]
         public string CensusNo { get; set; }
+
+        [Field(Label = "Name", Required = true, SortOrder = 2)]
         public string Name { get; set; }
+
+        [Field(SortOrder = 3)]
         public string Location { get; set; }
+
+        [Field(SortOrder = 4)]
         public string? Address { get; set; }
+
+        [Field(SortOrder = 5)]
         public string? Email { get; set; }
+
+        [Field(SortOrder = 6)]
         public string? PhoneNo { get; set; }
+
+        [Field(SortOrder = 7)]
         public SchoolType Type { get; set; }
 
         //one

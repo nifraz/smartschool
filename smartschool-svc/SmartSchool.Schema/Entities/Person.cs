@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SmartSchool.Schema.Classes;
 using SmartSchool.Schema.Enums;
+using SmartSchool.Schema.Resources;
 using SmartSchool.Utility.Extensions;
 using System;
 using System.Collections.Generic;
@@ -15,19 +16,32 @@ namespace SmartSchool.Schema.Entities
 {
     //[Index(nameof(NicNo), IsUnique = true)]
     //[Index(nameof(Email), IsUnique = true)]
+    [Resource("person", Plural = "persons", Module = "people", Icon = "mat:person", Label = "Person", SortOrder = 20)]
     public class Person : AbstractRecord
     {
+        [Field(Required = true, SortOrder = 1)]
         public string FullName { get; set; }
+        [Field(SortOrder = 2)]
         public string ShortName { get; set; }
+        [Field(SortOrder = 3)]
         public string? Nickname { get; set; }
+        [Field(SortOrder = 4)]
         public DateOnly? DateOfBirth { get; set; }
+        [Field(SortOrder = 5)]
         public string? BcNo { get; set; }
+        [Field(SortOrder = 6)]
         public Sex Sex { get; set; }
+        [Field(SortOrder = 7)]
         public string? NicNo { get; set; }
+        [Field(SortOrder = 8)]
         public string? PassportNo { get; set; }
+        [Field(SortOrder = 9)]
         public string? MobileNo { get; set; }
+        [Field(SortOrder = 10)]
         public string? Email { get; set; }
+        [Field(SortOrder = 11)]
         public string? Address { get; set; }
+        [Field(SortOrder = 12)]
         public string? Image { get; set; }
 
         //one

@@ -24,6 +24,7 @@
     "@angular/router": "^17.3.0",
     "@ngx-formly/core": "^6.3.10",
     "@ngx-formly/material": "^6.3.10",
+    "@ngx-translate/core": "^15.0.0",
     "ag-grid-angular": "^31.3.2",
     "ag-grid-community": "^31.3.2",
     "angular2-ladda": "^5.0.0",

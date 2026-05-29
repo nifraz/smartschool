@@ -1,13 +1,13 @@
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { routes } from './app.routes';
-import { provideClientHydration } from '@angular/platform-browser';
+import { provideClientHydration, withHttpTransferCacheOptions } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule } from '@angular/common/http';
 import { APOLLO_OPTIONS } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
-import { Apollo } from "apollo-angular";
-import { ApolloClientOptions, ApolloLink, InMemoryCache, split } from '@apollo/client/core';
+import { Apollo } from 'apollo-angular';
+import { ApolloClientOptions, InMemoryCache, split } from '@apollo/client/core';
 import { ToastrModule } from 'ngx-toastr';
 import { FormlyModule } from '@ngx-formly/core';
 import { FormlyMaterialModule } from '@ngx-formly/material';
@@ -18,6 +18,18 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { AutocompleteTypeComponent } from './shared/components/autocomplete-type/autocomplete-type.component';
 import { provideNativeDateAdapter } from '@angular/material/core';
+import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
+import { Observable, of } from 'rxjs';
+
+/**
+ * Translations are loaded by the bootstrapResolver via GraphQL (not over HTTP),
+ * so the TranslateModule loader is a no-op that returns an empty bundle.
+ */
+class NoopTranslateLoader implements TranslateLoader {
+  getTranslation(_lang: string): Observable<Record<string, string>> {
+    return of({});
+  }
+}
 
 export const MY_FORMATS = {
   parse: {
@@ -58,6 +70,10 @@ export const appConfig: ApplicationConfig = {
         validationMessages: [{ name: 'required', message: 'This field is required' }],
       }),
       FormlyMaterialModule,
+      TranslateModule.forRoot({
+        defaultLanguage: 'en',
+        loader: { provide: TranslateLoader, useClass: NoopTranslateLoader },
+      }),
     ),
     {
       provide: APOLLO_OPTIONS,

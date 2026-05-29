@@ -52,6 +52,14 @@ namespace SmartSchool.Schema
 
         public DbSet<PersonQualification> PersonQualifications { get; set; }
 
+        // ── Dynamic / cross-cutting ─────────────────────────────────────
+        public DbSet<Locale> Locales { get; set; }
+        public DbSet<Translation> Translations { get; set; }
+        public DbSet<Role> Roles { get; set; }
+        public DbSet<Permission> Permissions { get; set; }
+        public DbSet<RolePermission> RolePermissions { get; set; }
+        public DbSet<UserRoleLink> UserRoleLinks { get; set; }
+
         /// <summary>
         /// dotnet ef migrations add CreateInitialSchema --project SmartSchool.Schema --startup-project SmartSchool.Api
         /// dotnet ef database update --project SmartSchool.Schema --startup-project SmartSchool.Api
@@ -109,6 +117,16 @@ namespace SmartSchool.Schema
             //modelBuilder.Entity<User>().UseTptMappingStrategy();
 
             modelBuilder.ApplyConfiguration(new StudentConfiguration());
+
+            // Composite keys for RBAC join tables
+            modelBuilder.Entity<RolePermission>().HasKey(x => new { x.RoleId, x.PermissionId });
+            modelBuilder.Entity<UserRoleLink>().HasKey(x => new { x.UserId, x.RoleId });
+
+            // Unique index on translation (locale, namespace, key)
+            modelBuilder.Entity<Translation>()
+                .HasIndex(x => new { x.LocaleCode, x.Namespace, x.Key }).IsUnique();
+            modelBuilder.Entity<Role>().HasIndex(x => x.Code).IsUnique();
+            modelBuilder.Entity<Permission>().HasIndex(x => x.Code).IsUnique();
 
             // Apply global query filter for all entities that inherit from AbstractRecord
             foreach (var entityType in modelBuilder.Model.GetEntityTypes())

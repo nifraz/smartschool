@@ -1,4 +1,5 @@
 ﻿using SmartSchool.Schema.Enums;
+using SmartSchool.Schema.Resources;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -10,10 +11,14 @@ using System.Threading.Tasks;
 
 namespace SmartSchool.Schema.Entities
 {
+    [Resource("class", Plural = "classes", Module = "academic", Icon = "mat:groups", Label = "Class", SortOrder = 15)]
     public class Class : AbstractRecord
     {
+        [Field(Required = true, SortOrder = 1)]
         public Grade Grade { get; set; }
+        [Field(Required = true, SortOrder = 2)]
         public string Section { get; set; }
+        [Field(SortOrder = 3)]
         public string? Location { get; set; }
 
         //one

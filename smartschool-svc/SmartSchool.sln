@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartSchool.Utility", "Smar
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartSchool.Graphql", "SmartSchool.Graphql\SmartSchool.Graphql.csproj", "{707938EB-77DE-4B91-BD94-9E2B265EF087}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SmartSchool.Resources", "SmartSchool.Resources\SmartSchool.Resources.csproj", "{B7C9E8A1-4F12-4D5E-8C3B-9A2D1E0F7C12}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{707938EB-77DE-4B91-BD94-9E2B265EF087}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{707938EB-77DE-4B91-BD94-9E2B265EF087}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{707938EB-77DE-4B91-BD94-9E2B265EF087}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B7C9E8A1-4F12-4D5E-8C3B-9A2D1E0F7C12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B7C9E8A1-4F12-4D5E-8C3B-9A2D1E0F7C12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B7C9E8A1-4F12-4D5E-8C3B-9A2D1E0F7C12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B7C9E8A1-4F12-4D5E-8C3B-9A2D1E0F7C12}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

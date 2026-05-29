@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using SmartSchool.Schema.Resources;
 
 namespace SmartSchool.Schema.Entities
 {
+    [Resource("student", Plural = "students", Module = "people", Icon = "mat:school", Label = "Student", SortOrder = 30)]
     public class Student : AbstractRecord
     {
         //one

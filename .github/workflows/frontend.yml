@@ -18,4 +18,4 @@ jobs:
           cache-dependency-path: smartschool-gui/package-lock.json
       - run: npm ci
       - run: npm run build -- --configuration production
-      - run: npm test -- --watch=false --browsers=ChromeHeadless || true
+      - run: npm test -- --watch=false --browsers=ChromeHeadless

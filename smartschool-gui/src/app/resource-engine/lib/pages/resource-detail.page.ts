@@ -35,6 +35,10 @@ const UPDATE_MUTATION = gql`
         <a class="btn-back" [routerLink]="['/', r.plural]">{{ 'action.back' | translate }}</a>
       </header>
 
+      @if (error(); as msg) {
+        <p class="error">{{ msg }}</p>
+      }
+
       @if (loading()) {
         <p>{{ 'common.loading' | translate }}</p>
       } @else {
@@ -63,6 +67,7 @@ const UPDATE_MUTATION = gql`
     .page-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; }
     .btn-back { color: #1976d2; }
     .relations { margin-top: 2rem; }
+    .error { color: #d32f2f; margin-bottom: .75rem; }
   `],
 })
 export class ResourceDetailPage {
@@ -77,6 +82,7 @@ export class ResourceDetailPage {
   readonly isNew = computed(() => this.params()!.get('id') === 'new');
 
   readonly loading = signal(false);
+  readonly error = signal<string | null>(null);
   readonly itemValue = signal<Record<string, unknown>>({});
 
   constructor() {
@@ -92,6 +98,7 @@ export class ResourceDetailPage {
 
   private async loadItem(resourceKey: string, id: number): Promise<void> {
     this.loading.set(true);
+    this.error.set(null);
     try {
       const result = await this.apollo.query<{ resourceItem: string | null }>({
         query: ITEM_QUERY,
@@ -101,8 +108,10 @@ export class ResourceDetailPage {
 
       const raw = result?.data?.resourceItem;
       if (raw) {
-        try { this.itemValue.set(JSON.parse(raw)); } catch { /* ignore */ }
+        try { this.itemValue.set(JSON.parse(raw)); } catch { /* ignore parse errors */ }
       }
+    } catch (err) {
+      this.error.set(err instanceof Error ? err.message : 'Failed to load record.');
     } finally {
       this.loading.set(false);
     }
@@ -112,21 +121,25 @@ export class ResourceDetailPage {
     const r = this.resource();
     if (!r) return;
 
+    this.error.set(null);
     const idStr = this.params()!.get('id');
     const isNew = idStr === 'new';
 
-    if (isNew) {
-      await this.apollo.mutate({
-        mutation: CREATE_MUTATION,
-        variables: { resource: r.key, input: value },
-      }).toPromise();
-    } else {
-      await this.apollo.mutate({
-        mutation: UPDATE_MUTATION,
-        variables: { resource: r.key, id: Number(idStr), input: value },
-      }).toPromise();
+    try {
+      if (isNew) {
+        await this.apollo.mutate({
+          mutation: CREATE_MUTATION,
+          variables: { resource: r.key, input: value },
+        }).toPromise();
+      } else {
+        await this.apollo.mutate({
+          mutation: UPDATE_MUTATION,
+          variables: { resource: r.key, id: Number(idStr), input: value },
+        }).toPromise();
+      }
+      this.router.navigate(['/', r.plural]);
+    } catch (err) {
+      this.error.set(err instanceof Error ? err.message : 'Failed to save record.');
     }
-
-    this.router.navigate(['/', r.plural]);
   }
 }

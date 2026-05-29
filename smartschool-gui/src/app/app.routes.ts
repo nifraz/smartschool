@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { bootstrapResolver, resourceExistsMatch } from './resource-engine';
+import { authGuard } from './auth/guards/auth.guard';
 
 /**
  * The ENTIRE route table. Two dynamic routes cover every entity.
@@ -12,6 +13,7 @@ export const routes: Routes = [
   },
   {
     path: '',
+    canActivate: [authGuard],
     resolve: { _bootstrap: bootstrapResolver },
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'dashboard' },

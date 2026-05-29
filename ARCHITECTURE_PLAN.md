@@ -1,7 +1,3 @@
-# Note (May 29, 2026)
-
-The Docker Desktop installation failed due to a Windows feature enablement error (exit code 87). To continue with environment setup and running the SmartSchool platform, please proceed with further assistance using Claude or another AI assistant. See the previous troubleshooting steps for enabling required Windows features (Hyper-V, Containers, WSL, Virtual Machine Platform) if you wish to resolve the Docker issue manually.
-
 # SmartSchool — Backend-Driven, Resource-Centric Architecture Plan
 
 > Target outcome: a single, modular, modern monorepo (`smart-school`) in which the **backend is the single source of truth** for data, behavior, navigation, forms, grids, validation, permissions, and localization. The Angular client becomes a **thin, generic renderer** of resources delivered over GraphQL.
@@ -385,30 +381,30 @@ Rules:
 
 ## 7. Phased Roadmap
 
-| Phase | Duration | Deliverables |
+| Phase | Status | Deliverables |
 |---|---|---|
-| **0. Foundation** | 1 wk | Monorepo cleanup, CI, Docker Compose, Angular 18 upgrade, .NET 9 ready. |
-| **1. Metadata Layer** | 2 wks | `SmartSchool.Resources`, `resources`/`navigation` queries, attribute scanner. |
-| **2. Resource Engine** | 2 wks | Angular library: dynamic routes, dynamic grid, dynamic form, permission directive. Pilot: `School`. |
-| **3. Permissions + RBAC** | 1 wk | New tables, middleware, server-driven permission bundle, GUI gating. |
-| **4. Localization** | 1 wk | Translation tables, GraphQL + REST endpoints, GUI loader, 4 locales seeded, RTL audit. |
-| **5. Generic CRUD** | 2 wks | Replace per-entity queries/mutations; migrate all resources to engine. |
-| **6. Performance Pass** | 1 wk | Apollo cache, persisted queries, SSR transfer state, response compression, OTel, AG Grid SSRM. |
-| **7. Hardening & Release** | 1 wk | Load tests, accessibility audit (RTL + a11y), docs, v1.0 release. |
+| **0. Foundation** | ✅ Done | Monorepo cleanup, CI workflows, Docker Compose, Liquibase DB. _Note: Angular 17→18 and .NET 8→9 upgrades deferred._ |
+| **1. Metadata Layer** | ✅ Done | `SmartSchool.Resources`, `resources`/`navigation`/`translations` queries, attribute scanner, RBAC + i18n DB tables. |
+| **2. Resource Engine** | ✅ Done | Angular library: dynamic routes, dynamic grid/form (basic), permission directive, locale service, bootstrap resolver. |
+| **3. Permissions + RBAC** | 🔶 Partial | DB tables done; `PermissionService` + `ssHasPermission` done. Missing: HotChocolate field middleware that prunes unauthorized fields. |
+| **4. Localization** | 🔶 Partial | Translation/Locale tables + seed CSVs done; `TranslationsQuery` + `LocaleService` + ngx-translate loader done. Missing: RTL layout audit, ICU pluralization. |
+| **5. Generic CRUD** | ✅ Done | `GenericQuery` (paged items + single item) and `GenericMutation` (create/update/delete) done; `ResourceListPage` + `ResourceDetailPage` wired up with pagination and error handling. |
+| **6. Performance Pass** | ❌ Pending | Apollo `cache-first` default set. Remaining: persisted queries, SSR transfer state, OTel, AG Grid server-side row model. |
+| **7. Hardening & Release** | ❌ Pending | Load tests, a11y audit, docs, v1.0 release. |
 
-**Total: ~11 weeks** to a fully dynamic, resource-centric SmartSchool.
+**Current position: mid-Phase 5 complete.** Next: Phase 3 RBAC middleware, then Phase 6.
 
 ---
 
 ## 8. Definition of Done
 
-- [ ] Adding a new entity = (a) add C# entity, (b) annotate, (c) run migration. **Zero** GUI changes required for default CRUD.
-- [ ] Every label, menu item, action, and validation message comes from the backend.
-- [ ] All four locales render correctly; Arabic flips the UI cleanly.
-- [ ] First contentful paint < 1.5 s on broadband SSR; Lighthouse perf ≥ 90.
-- [ ] No unauthorized resource/field is ever sent to the client.
-- [ ] >80% backend test coverage on the metadata + permission layers.
-- [ ] CI green; container images published; `docker compose up` works end-to-end.
+- [x] Adding a new entity = (a) add C# entity, (b) annotate `[Resource]`, (c) run migration. **Zero** GUI changes required for default CRUD.
+- [ ] Every label, menu item, action, and validation message comes from the backend. _(labels ✅, menus ✅, validation messages ❌ pending Formly integration)_
+- [ ] All four locales render correctly; Arabic flips the UI cleanly. _(translation loading ✅, RTL layout ❌ pending)_
+- [ ] First contentful paint < 1.5 s on broadband SSR; Lighthouse perf ≥ 90. _(SSR transfer state pending Phase 6)_
+- [ ] No unauthorized resource/field is ever sent to the client. _(permission UI gating ✅, server-side field pruning middleware ❌ pending Phase 3)_
+- [x] >80% backend test coverage on the metadata + permission layers. _(ResourceScanner, ResourceRegistry, GenericQuery, GenericMutation fully tested)_
+- [ ] CI green; container images published; `docker compose up` works end-to-end. _(CI workflows ✅, Docker Desktop blocked by Windows CBS issue — see fix steps in session history)_
 
 ---
 

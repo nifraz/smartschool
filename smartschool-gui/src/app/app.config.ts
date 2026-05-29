@@ -1,9 +1,9 @@
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter, withComponentInputBinding } from '@angular/router';
 import { routes } from './app.routes';
-import { provideClientHydration, withHttpTransferCacheOptions } from '@angular/platform-browser';
+import { provideClientHydration } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { HTTP_INTERCEPTORS, HttpClient, HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { APOLLO_OPTIONS } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { Apollo } from 'apollo-angular';
@@ -104,11 +104,11 @@ export const appConfig: ApplicationConfig = {
         cache: new InMemoryCache(),
         defaultOptions: {
           watchQuery: {
-            fetchPolicy: 'no-cache',
+            fetchPolicy: 'cache-first',
             errorPolicy: 'all',
           },
           query: {
-            fetchPolicy: 'no-cache',
+            fetchPolicy: 'cache-first',
             errorPolicy: 'all',
           },
         },

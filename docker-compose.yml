@@ -1,3 +1,5 @@
+name: smartschool
+
 services:
   mariadb:
     image: mariadb:11.4

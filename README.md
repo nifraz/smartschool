@@ -3,7 +3,7 @@
 Monorepo containing the SmartSchool platform.
 
 ```
-smart-school/
+smartschool/
 ├── ARCHITECTURE_PLAN.md          # the full plan
 ├── docker-compose.yml            # mariadb + liquibase + svc + gui
 ├── smartschool-svc/              # .NET 8 + HotChocolate + EF Core (MariaDB)

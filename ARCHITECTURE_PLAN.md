@@ -1,6 +1,6 @@
 # SmartSchool — Backend-Driven, Resource-Centric Architecture Plan
 
-> Target outcome: a single, modular, modern monorepo (`smart-school`) in which the **backend is the single source of truth** for data, behavior, navigation, forms, grids, validation, permissions, and localization. The Angular client becomes a **thin, generic renderer** of resources delivered over GraphQL.
+> Target outcome: a single, modular, modern monorepo (`smartschool`) in which the **backend is the single source of truth** for data, behavior, navigation, forms, grids, validation, permissions, and localization. The Angular client becomes a **thin, generic renderer** of resources delivered over GraphQL.
 
 ---
 
@@ -52,7 +52,7 @@
 
 ### 2.2 High-Level Diagram
 ```
-┌────────────────────────────── smart-school (monorepo) ──────────────────────────────┐
+┌──────────────────────────────── smartschool (monorepo) ─────────────────────────────┐
 │                                                                                     │
 │  smartschool-svc (.NET 8)                       smartschool-gui (Angular 18)        │
 │  ┌──────────────────────────────┐               ┌──────────────────────────────┐    │

@@ -47,7 +47,7 @@
       "request": "attach",
       "pipeTransport": {
         "pipeProgram": "docker",
-        "pipeArgs": ["exec", "-i", "smart-school-svc-1"],
+        "pipeArgs": ["exec", "-i", "smartschool-svc-1"],
         "debuggerPath": "/vsdbg/vsdbg",
         "pipeCwd": "${workspaceFolder}"
       },

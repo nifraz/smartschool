@@ -1,0 +1,18 @@
+# Override file for debugging. Use with:
+#   docker compose -f docker-compose.yml -f docker-compose.debug.yml up --build
+#
+# What this changes vs. the base file:
+#   • svc is built in Debug configuration (full PDB symbols)
+#   • svc uses the "debug" Dockerfile target (vsdbg installed at /vsdbg)
+#   • svc gets a /src bind-mount so VS Code can map container paths → local files
+services:
+  svc:
+    build:
+      context: ./smartschool-svc
+      target: debug
+      args:
+        BUILD_CONFIGURATION: Debug
+    volumes:
+      - ./smartschool-svc:/src:ro
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development

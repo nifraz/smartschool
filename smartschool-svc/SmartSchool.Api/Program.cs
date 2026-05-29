@@ -84,6 +84,7 @@ builder.Services
     .AddTypeExtension<ResourcesQuery>()
     .AddTypeExtension<NavigationQuery>()
     .AddTypeExtension<TranslationsQuery>()
+    .AddTypeExtension<GenericQuery>()
     .AddMutationType<Mutation>()
     .AddTypeExtension<PersonMutation>()
     .AddTypeExtension<StudentMutation>()

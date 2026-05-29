@@ -1,17 +1,30 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { toSignal } from '@angular/core/rxjs-interop';
+import { Apollo, gql } from 'apollo-angular';
 import { DynamicFormComponent } from '../components/dynamic-form.component';
 import { ResourceRegistryService } from '../services/resource-registry.service';
 
-/**
- * Generic detail/edit page:  /:resource/:id
- * `:id === "new"` switches to create mode.
- * TODO: load entity via generic `item(resource, id)` query;
- * render related-resource tabs based on `resource.relations`.
- */
+const ITEM_QUERY = gql`
+  query ResourceItem($resource: String!, $id: Long!) {
+    resourceItem(resource: $resource, id: $id)
+  }
+`;
+
+const CREATE_MUTATION = gql`
+  mutation CreateResource($resource: String!, $input: Any) {
+    createResource(resource: $resource, input: $input)
+  }
+`;
+
+const UPDATE_MUTATION = gql`
+  mutation UpdateResource($resource: String!, $id: Long!, $input: Any) {
+    updateResource(resource: $resource, id: $id, input: $input)
+  }
+`;
+
 @Component({
   standalone: true,
   imports: [CommonModule, RouterModule, TranslateModule, DynamicFormComponent],
@@ -21,7 +34,12 @@ import { ResourceRegistryService } from '../services/resource-registry.service';
         <h1>{{ r.label }} — {{ isNew() ? ('action.create' | translate) : ('action.edit' | translate) }}</h1>
         <a class="btn-back" [routerLink]="['/', r.plural]">{{ 'action.back' | translate }}</a>
       </header>
-      <ss-dynamic-form [resource]="r" (save)="onSave($event)" />
+
+      @if (loading()) {
+        <p>{{ 'common.loading' | translate }}</p>
+      } @else {
+        <ss-dynamic-form [resource]="r" [value]="itemValue()" (save)="onSave($event)" />
+      }
 
       @if (r.relations.length) {
         <section class="relations">
@@ -51,16 +69,64 @@ export class ResourceDetailPage {
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly registry = inject(ResourceRegistryService);
+  private readonly apollo = inject(Apollo);
 
   readonly params = toSignal(this.route.paramMap, { requireSync: true });
   readonly resource = computed(() =>
     this.registry.getByPlural(this.params()!.get('resource') ?? ''));
   readonly isNew = computed(() => this.params()!.get('id') === 'new');
 
-  onSave(value: Record<string, any>): void {
-    // TODO: call generic createResource / updateResource mutation.
-    console.log('save', value);
+  readonly loading = signal(false);
+  readonly itemValue = signal<Record<string, unknown>>({});
+
+  constructor() {
+    effect(() => {
+      const r = this.resource();
+      const idStr = this.params()!.get('id');
+      if (r && idStr && idStr !== 'new') {
+        const id = Number(idStr);
+        if (!isNaN(id)) void this.loadItem(r.key, id);
+      }
+    });
+  }
+
+  private async loadItem(resourceKey: string, id: number): Promise<void> {
+    this.loading.set(true);
+    try {
+      const result = await this.apollo.query<{ resourceItem: string | null }>({
+        query: ITEM_QUERY,
+        variables: { resource: resourceKey, id },
+        fetchPolicy: 'network-only',
+      }).toPromise();
+
+      const raw = result?.data?.resourceItem;
+      if (raw) {
+        try { this.itemValue.set(JSON.parse(raw)); } catch { /* ignore */ }
+      }
+    } finally {
+      this.loading.set(false);
+    }
+  }
+
+  async onSave(value: Record<string, unknown>): Promise<void> {
     const r = this.resource();
-    if (r) this.router.navigate(['/', r.plural]);
+    if (!r) return;
+
+    const idStr = this.params()!.get('id');
+    const isNew = idStr === 'new';
+
+    if (isNew) {
+      await this.apollo.mutate({
+        mutation: CREATE_MUTATION,
+        variables: { resource: r.key, input: value },
+      }).toPromise();
+    } else {
+      await this.apollo.mutate({
+        mutation: UPDATE_MUTATION,
+        variables: { resource: r.key, id: Number(idStr), input: value },
+      }).toPromise();
+    }
+
+    this.router.navigate(['/', r.plural]);
   }
 }

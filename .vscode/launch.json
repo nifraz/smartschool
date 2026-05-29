@@ -1,0 +1,103 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET: SmartSchool API (Kestrel)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build: smartschool-svc",
+      "program": "${workspaceFolder}/smartschool-svc/SmartSchool.Api/bin/Debug/net8.0/SmartSchool.Api.dll",
+      "args": [],
+      "cwd": "${workspaceFolder}/smartschool-svc/SmartSchool.Api",
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ASPNETCORE_URLS": "http://localhost:5000"
+      },
+      "stopAtEntry": false,
+      "console": "integratedTerminal",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "Now listening on: (http[s]?://\\S+)"
+      }
+    },
+    {
+      "name": ".NET: Attach to SmartSchool API",
+      "type": "coreclr",
+      "request": "attach",
+      "processName": "SmartSchool.Api"
+    },
+    {
+      "name": "Angular: Chrome (localhost:4200)",
+      "type": "chrome",
+      "request": "launch",
+      "preLaunchTask": "serve: smartschool-gui",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}/smartschool-gui/src",
+      "sourceMapPathOverrides": {
+        "webpack:/*": "${webRoot}/*",
+        "/./*": "${webRoot}/*",
+        "/src/*": "${webRoot}/*",
+        "/*": "*",
+        "/./~/*": "${workspaceFolder}/smartschool-gui/node_modules/*"
+      }
+    },
+    {
+      "name": ".NET: Docker Attach (svc)",
+      "type": "coreclr",
+      "request": "attach",
+      "pipeTransport": {
+        "pipeProgram": "docker",
+        "pipeArgs": ["exec", "-i", "smart-school-svc-1"],
+        "debuggerPath": "/vsdbg/vsdbg",
+        "pipeCwd": "${workspaceFolder}"
+      },
+      "processId": "${command:pickRemoteProcess}",
+      "justMyCode": false,
+      "sourceFileMap": {
+        "/src": "${workspaceFolder}/smartschool-svc"
+      }
+    },
+    {
+      "name": "Angular: Edge (localhost:4200)",
+      "type": "msedge",
+      "request": "launch",
+      "preLaunchTask": "serve: smartschool-gui",
+      "url": "http://localhost:4200",
+      "webRoot": "${workspaceFolder}/smartschool-gui/src",
+      "sourceMapPathOverrides": {
+        "webpack:/*": "${webRoot}/*",
+        "/./*": "${webRoot}/*",
+        "/src/*": "${webRoot}/*",
+        "/*": "*",
+        "/./~/*": "${workspaceFolder}/smartschool-gui/node_modules/*"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Docker: Full Stack Debug (Chrome)",
+      "configurations": [
+        ".NET: Docker Attach (svc)",
+        "Angular: Chrome (localhost:4200)"
+      ],
+      "preLaunchTask": "docker-compose: up (debug)",
+      "stopAll": true
+    },
+    {
+      "name": "Full Stack: API + Angular (Chrome)",
+      "configurations": [
+        ".NET: SmartSchool API (Kestrel)",
+        "Angular: Chrome (localhost:4200)"
+      ],
+      "stopAll": true
+    },
+    {
+      "name": "Full Stack: API + Angular (Edge)",
+      "configurations": [
+        ".NET: SmartSchool API (Kestrel)",
+        "Angular: Edge (localhost:4200)"
+      ],
+      "stopAll": true
+    }
+  ]
+}

@@ -1,0 +1,87 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build: smartschool-svc",
+      "type": "process",
+      "command": "dotnet",
+      "args": ["build", "${workspaceFolder}/smartschool-svc/SmartSchool.sln", "--configuration", "Debug"],
+      "group": "build",
+      "presentation": { "reveal": "silent" },
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "watch: smartschool-svc",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "watch",
+        "run",
+        "--project", "${workspaceFolder}/smartschool-svc/SmartSchool.Api/SmartSchool.Api.csproj",
+        "--launch-profile", "Kestrel"
+      ],
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": {
+        "pattern": { "regexp": "." },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Building\\.\\.\\.",
+          "endsPattern": "Application started\\."
+        }
+      }
+    },
+    {
+      "label": "serve: smartschool-gui",
+      "type": "shell",
+      "command": "npm run start",
+      "options": { "cwd": "${workspaceFolder}/smartschool-gui" },
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated" },
+      "problemMatcher": {
+        "pattern": { "regexp": "." },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Building\\.\\.\\.",
+          "endsPattern": "compiled successfully"
+        }
+      }
+    },
+    {
+      "label": "docker-compose: up (debug)",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml -f docker-compose.debug.yml up --build",
+      "options": { "cwd": "${workspaceFolder}" },
+      "isBackground": true,
+      "presentation": { "reveal": "always", "panel": "dedicated", "group": "docker" },
+      "problemMatcher": {
+        "pattern": { "regexp": "." },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "Building",
+          "endsPattern": "Application started\\."
+        }
+      }
+    },
+    {
+      "label": "docker-compose: down",
+      "type": "shell",
+      "command": "docker compose -f docker-compose.yml -f docker-compose.debug.yml down",
+      "options": { "cwd": "${workspaceFolder}" },
+      "presentation": { "reveal": "always", "panel": "shared" },
+      "problemMatcher": []
+    },
+    {
+      "label": "db: update (EF)",
+      "type": "process",
+      "command": "dotnet",
+      "args": [
+        "ef", "database", "update",
+        "--project", "${workspaceFolder}/smartschool-svc/SmartSchool.Schema/SmartSchool.Schema.csproj",
+        "--startup-project", "${workspaceFolder}/smartschool-svc/SmartSchool.Api/SmartSchool.Api.csproj"
+      ],
+      "presentation": { "reveal": "always" },
+      "problemMatcher": []
+    }
+  ]
+}

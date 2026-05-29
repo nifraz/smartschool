@@ -1,3 +1,7 @@
+# Note (May 29, 2026)
+
+The Docker Desktop installation failed due to a Windows feature enablement error (exit code 87). To continue with environment setup and running the SmartSchool platform, please proceed with further assistance using Claude or another AI assistant. See the previous troubleshooting steps for enabling required Windows features (Hyper-V, Containers, WSL, Virtual Machine Platform) if you wish to resolve the Docker issue manually.
+
 # SmartSchool — Backend-Driven, Resource-Centric Architecture Plan
 
 > Target outcome: a single, modular, modern monorepo (`smart-school`) in which the **backend is the single source of truth** for data, behavior, navigation, forms, grids, validation, permissions, and localization. The Angular client becomes a **thin, generic renderer** of resources delivered over GraphQL.

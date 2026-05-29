@@ -9,13 +9,12 @@ namespace SmartSchool.Graphql.Queries;
 
 /// <summary>
 /// Resource-key driven reads: one query surface for every entity.
-/// Returns a paged list of camelCase JSON strings; the frontend resource-engine
-/// parses them by matching field descriptor keys.
+/// Returns JsonElement (HotChocolate JSON scalar) so Apollo receives real
+/// objects on the wire — no double-encode/decode, cache-transparent.
 /// </summary>
 [ExtendObjectType<Query>]
 public class GenericQuery
 {
-    /// <summary>Returns a page of records for the given resource key.</summary>
     public async Task<GenericPage> ResourceItemsAsync(
         string resource,
         int skip,
@@ -35,8 +34,7 @@ public class GenericQuery
         return await (Task<GenericPage>)helper.Invoke(null, [db, skip, take, ct])!;
     }
 
-    /// <summary>Returns a single record by resource key + id, or null.</summary>
-    public async Task<string?> ResourceItemAsync(
+    public async Task<JsonElement?> ResourceItemAsync(
         string resource,
         long id,
         [Service] ResourceRegistry registry,
@@ -50,7 +48,7 @@ public class GenericQuery
             .GetMethod(nameof(FindItemAsync), BindingFlags.NonPublic | BindingFlags.Static)!
             .MakeGenericMethod(d.ClrType);
 
-        return await (Task<string?>)helper.Invoke(null, [db, id, ct])!;
+        return await (Task<JsonElement?>)helper.Invoke(null, [db, id, ct])!;
     }
 
     // ── Typed helpers (called via MakeGenericMethod) ─────────────────────────
@@ -61,15 +59,17 @@ public class GenericQuery
         var q = db.Set<T>();
         var total = await q.CountAsync(ct);
         var items = await q.Skip(skip).Take(take).ToListAsync(ct);
-        return new GenericPage(total, items.Select(Serialize).ToList());
+        return new GenericPage(total, items.Select(ToJsonElement).ToList());
     }
 
-    private static async Task<string?> FindItemAsync<T>(
+    private static async Task<JsonElement?> FindItemAsync<T>(
         AppDbContext db, long id, CancellationToken ct) where T : class
     {
         var entity = await db.Set<T>().FindAsync([id], ct);
-        return entity is null ? null : Serialize(entity);
+        return entity is null ? null : ToJsonElement(entity);
     }
+
+    // ── Serialization ─────────────────────────────────────────────────────────
 
     private static readonly JsonSerializerOptions SerializerOpts = new()
     {
@@ -78,8 +78,14 @@ public class GenericQuery
         ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles,
     };
 
-    private static string Serialize(object entity)
-        => JsonSerializer.Serialize(entity, SerializerOpts);
+    private static JsonElement ToJsonElement(object entity)
+    {
+        var json = JsonSerializer.Serialize(entity, SerializerOpts);
+        return JsonSerializer.Deserialize<JsonElement>(json);
+    }
 }
 
-public sealed record GenericPage(int Total, IReadOnlyList<string> Items);
+/// <summary>
+/// Items are JsonElement (JSON scalar) — Apollo receives real objects, not encoded strings.
+/// </summary>
+public sealed record GenericPage(int Total, IReadOnlyList<JsonElement> Items);

@@ -100,16 +100,14 @@ export class ResourceDetailPage {
     this.loading.set(true);
     this.error.set(null);
     try {
-      const result = await this.apollo.query<{ resourceItem: string | null }>({
+      const result = await this.apollo.query<{ resourceItem: Record<string, unknown> | null }>({
         query: ITEM_QUERY,
         variables: { resource: resourceKey, id },
         fetchPolicy: 'network-only',
       }).toPromise();
 
       const raw = result?.data?.resourceItem;
-      if (raw) {
-        try { this.itemValue.set(JSON.parse(raw)); } catch { /* ignore parse errors */ }
-      }
+      if (raw != null) this.itemValue.set(raw);
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Failed to load record.');
     } finally {
@@ -130,11 +128,15 @@ export class ResourceDetailPage {
         await this.apollo.mutate({
           mutation: CREATE_MUTATION,
           variables: { resource: r.key, input: value },
+          refetchQueries: ['ResourceItems'],
+          awaitRefetchQueries: true,
         }).toPromise();
       } else {
         await this.apollo.mutate({
           mutation: UPDATE_MUTATION,
           variables: { resource: r.key, id: Number(idStr), input: value },
+          refetchQueries: ['ResourceItems'],
+          awaitRefetchQueries: true,
         }).toPromise();
       }
       this.router.navigate(['/', r.plural]);

@@ -1,17 +1,16 @@
 using System.Text.Json;
 using HotChocolate;
+using HotChocolate.Subscriptions;
 using HotChocolate.Types;
-using Microsoft.EntityFrameworkCore;
+using SmartSchool.Graphql.Subscriptions;
 using SmartSchool.Resources;
 using SmartSchool.Schema;
-using SmartSchool.Schema.Entities;
 
 namespace SmartSchool.Graphql.Mutations;
 
 /// <summary>
-/// Resource-key driven CRUD: a single mutation surface for every entity.
-/// The per-entity Mutation classes can now be deprecated.
-/// Input is a JSON object whose keys match the entity property names.
+/// Resource-key driven CRUD. After each operation publishes a ResourceChangedEvent
+/// to the matching topic so subscribed clients refresh immediately.
 /// </summary>
 [ExtendObjectType<Mutation>]
 public class GenericMutation
@@ -20,6 +19,7 @@ public class GenericMutation
         string resource,
         JsonElement input,
         [Service] ResourceRegistry registry,
+        [Service] ITopicEventSender sender,
         AppDbContext db,
         CancellationToken ct)
     {
@@ -28,12 +28,15 @@ public class GenericMutation
         Apply(entity, input);
         db.Add(entity);
         await db.SaveChangesAsync(ct);
-        return (long)d.ClrType.GetProperty("Id")!.GetValue(entity)!;
+        var id = (long)d.ClrType.GetProperty("Id")!.GetValue(entity)!;
+        await sender.SendAsync(resource, new ResourceChangedEvent(resource, "created", id), ct);
+        return id;
     }
 
     public async Task<bool> UpdateResourceAsync(
         string resource, long id, JsonElement input,
         [Service] ResourceRegistry registry,
+        [Service] ITopicEventSender sender,
         AppDbContext db,
         CancellationToken ct)
     {
@@ -41,19 +44,22 @@ public class GenericMutation
         var entity = await db.FindAsync(d.ClrType, id) ?? throw new GraphQLException("Not found");
         Apply(entity, input);
         await db.SaveChangesAsync(ct);
+        await sender.SendAsync(resource, new ResourceChangedEvent(resource, "updated", id), ct);
         return true;
     }
 
     public async Task<bool> DeleteResourceAsync(
         string resource, long id,
         [Service] ResourceRegistry registry,
+        [Service] ITopicEventSender sender,
         AppDbContext db,
         CancellationToken ct)
     {
         var d = registry.Get(resource) ?? throw new GraphQLException($"Unknown resource '{resource}'");
         var entity = await db.FindAsync(d.ClrType, id) ?? throw new GraphQLException("Not found");
-        db.Remove(entity); // soft-delete handled by AppDbContext.SaveChangesAsync
+        db.Remove(entity);
         await db.SaveChangesAsync(ct);
+        await sender.SendAsync(resource, new ResourceChangedEvent(resource, "deleted", id), ct);
         return true;
     }
 
@@ -65,14 +71,16 @@ public class GenericMutation
         {
             var pi = type.GetProperty(
                 prop.Name,
-                System.Reflection.BindingFlags.IgnoreCase | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Instance);
+                System.Reflection.BindingFlags.IgnoreCase |
+                System.Reflection.BindingFlags.Public |
+                System.Reflection.BindingFlags.Instance);
             if (pi is null || !pi.CanWrite) continue;
             try
             {
                 var value = JsonSerializer.Deserialize(prop.Value.GetRawText(), pi.PropertyType);
                 pi.SetValue(entity, value);
             }
-            catch { /* TODO: collect and surface validation errors */ }
+            catch { /* type mismatch — skip field */ }
         }
     }
 }

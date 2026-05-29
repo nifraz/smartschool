@@ -93,6 +93,7 @@ builder.Services
     .AddTypeExtension<GenericMutation>()
     .AddInMemorySubscriptions()
     .AddSubscriptionType<SchoolSubscription>()
+    .AddTypeExtension<GenericSubscription>()
     .AddProjections()
     .AddFiltering()
     .AddSorting();

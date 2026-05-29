@@ -1,5 +1,5 @@
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
-import { provideRouter, withComponentInputBinding } from '@angular/router';
+import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -18,7 +18,7 @@ import { GraphQLWsLink } from '@apollo/client/link/subscriptions';
 import { createClient } from 'graphql-ws';
 import { AutocompleteTypeComponent } from './shared/components/autocomplete-type/autocomplete-type.component';
 import { provideNativeDateAdapter } from '@angular/material/core';
-import { TranslateLoader, TranslateModule, TranslateService } from '@ngx-translate/core';
+import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { Observable, of } from 'rxjs';
 
 /**
@@ -101,7 +101,20 @@ export const appConfig: ApplicationConfig = {
             uri: 'http://localhost:5000/graphql',
           }),
         ),
-        cache: new InMemoryCache(),
+        cache: new InMemoryCache({
+          typePolicies: {
+            // Prevent Apollo normalizing GenericPage (no 'id' field, just total+items)
+            GenericPage: { keyFields: false },
+            Query: {
+              fields: {
+                // Separate cache bucket per (resource, skip, take) triple
+                resourceItems: { keyArgs: ['resource', 'skip', 'take'] },
+                // Separate cache bucket per (resource, id) pair
+                resourceItem:  { keyArgs: ['resource', 'id'] },
+              },
+            },
+          },
+        }),
         defaultOptions: {
           watchQuery: {
             fetchPolicy: 'cache-first',

@@ -127,7 +127,7 @@ public class GenericQueryTests
     // ── resourceItems: serialization ─────────────────────────────────────────
 
     [Fact]
-    public async Task ResourceItems_ReturnsCamelCaseJsonStrings()
+    public async Task ResourceItems_ReturnsCamelCaseJsonElements()
     {
         using var db = TestDb.Create();
         db.Schools.Add(School("JSON School"));
@@ -136,9 +136,9 @@ public class GenericQueryTests
         var result = await new GenericQuery()
             .ResourceItemsAsync("school", 0, 10, SchoolRegistry(), db, default);
 
-        var json = JsonDocument.Parse(result.Items[0]);
-        json.RootElement.TryGetProperty("name", out _).Should().BeTrue();
-        json.RootElement.TryGetProperty("Name", out _).Should().BeFalse();
+        var element = result.Items[0]; // already a JsonElement — no Parse needed
+        element.TryGetProperty("name", out _).Should().BeTrue();
+        element.TryGetProperty("Name", out _).Should().BeFalse();
     }
 
     [Fact]
@@ -151,9 +151,9 @@ public class GenericQueryTests
         var result = await new GenericQuery()
             .ResourceItemsAsync("school", 0, 10, SchoolRegistry(), db, default);
 
-        var json = JsonDocument.Parse(result.Items[0]);
-        json.RootElement.GetProperty("name").GetString().Should().Be("Test School");
-        json.RootElement.GetProperty("censusNo").GetString().Should().Be("C001");
+        var element = result.Items[0];
+        element.GetProperty("name").GetString().Should().Be("Test School");
+        element.GetProperty("censusNo").GetString().Should().Be("C001");
     }
 
     // ── resourceItems: soft-delete global filter ──────────────────────────────
@@ -174,8 +174,7 @@ public class GenericQueryTests
 
         result.Total.Should().Be(1);
         result.Items.Should().HaveCount(1);
-        JsonDocument.Parse(result.Items[0]).RootElement
-            .GetProperty("name").GetString().Should().Be("Active");
+        result.Items[0].GetProperty("name").GetString().Should().Be("Active");
     }
 
     // ── resourceItem ──────────────────────────────────────────────────────────
@@ -204,7 +203,7 @@ public class GenericQueryTests
     }
 
     [Fact]
-    public async Task ResourceItem_ValidId_ReturnsSerializedJson()
+    public async Task ResourceItem_ValidId_ReturnsJsonElement()
     {
         using var db = TestDb.Create();
         db.Schools.Add(School("Specific School"));
@@ -214,9 +213,8 @@ public class GenericQueryTests
         var result = await new GenericQuery()
             .ResourceItemAsync("school", id, SchoolRegistry(), db, default);
 
-        result.Should().NotBeNull();
-        var json = JsonDocument.Parse(result!);
-        json.RootElement.GetProperty("name").GetString().Should().Be("Specific School");
+        result.HasValue.Should().BeTrue();
+        result!.Value.GetProperty("name").GetString().Should().Be("Specific School");
     }
 
     [Fact]
@@ -230,9 +228,8 @@ public class GenericQueryTests
         var result = await new GenericQuery()
             .ResourceItemAsync("school", id, SchoolRegistry(), db, default);
 
-        var json = JsonDocument.Parse(result!);
-        json.RootElement.TryGetProperty("censusNo", out _).Should().BeTrue();
-        json.RootElement.TryGetProperty("CensusNo", out _).Should().BeFalse();
+        result!.Value.TryGetProperty("censusNo", out _).Should().BeTrue();
+        result!.Value.TryGetProperty("CensusNo", out _).Should().BeFalse();
     }
 
     [Fact]

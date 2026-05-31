@@ -3,11 +3,12 @@ import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { BehaviorSubject, catchError, iif, map, Observable, of, switchMap, tap, throwError } from 'rxjs';
 import { AuthenticateResponse, UserLoginRequest, UserRegisterRequest, VerifyRequest, UserResponse } from '../shared/models';
-import moment, { Moment } from 'moment';
 import { UserModel } from '../../../graphql/generated';
 import { GraphqlService } from '../shared/services/graphql.service';
 import { GET_USER } from '../shared/queries';
 import { GraphqlTypes } from '../shared/enums';
+
+const API_BASE = `http://${window.location.hostname}:5000`;
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +30,7 @@ export class AuthService {
   register(model: UserRegisterRequest): Observable<UserResponse> {
     return iif(
       () => !!(model.password == model.password2),
-      this.http.post<UserResponse>('https://localhost:5001/api/auth/register', model),
+      this.http.post<UserResponse>(`${API_BASE}/api/auth/register`, model),
       throwError(() => ({
         error: {
           message: "Passwords do not match.",
@@ -39,11 +40,11 @@ export class AuthService {
   }
 
   verify(model: VerifyRequest): Observable<UserResponse> {
-    return this.http.put<UserResponse>('https://localhost:5001/api/auth/verify', model);
+    return this.http.put<UserResponse>(`${API_BASE}/api/auth/verify`, model);
   }
   
   login(model: UserLoginRequest): Observable<AuthenticateResponse> {
-    return this.http.post<AuthenticateResponse>('https://localhost:5001/api/auth/login', model).pipe(
+    return this.http.post<AuthenticateResponse>(`${API_BASE}/api/auth/login`, model).pipe(
       tap(res => {
         if ((model.email && res.isEmailVerified) || (model.mobileNo && res.isMobileNoVerified)) {
           this.setSession(res);
@@ -86,11 +87,9 @@ export class AuthService {
   }
 
   private setSession(model: AuthenticateResponse) {
-    // model.expires is in UTC format
-    const expiresAt = moment(model.expires);
     localStorage.setItem('userId', model.userId.toString());
     localStorage.setItem('token', model.token);
-    localStorage.setItem('expires', JSON.stringify(expiresAt.valueOf()));
+    localStorage.setItem('expires', String(new Date(model.expires).getTime()));
   }
 
   getUserId(): number {
@@ -101,22 +100,19 @@ export class AuthService {
     return localStorage.getItem('token');
   }
 
-  getExpiration(): Moment | null {
-      const expiration = localStorage.getItem('expires');
-      if (!expiration) {
-        return null;
-      }
-      const expiresAt = JSON.parse(expiration);
-      return moment(expiresAt);
+  getExpiration(): Date | null {
+    const expiration = localStorage.getItem('expires');
+    if (!expiration) return null;
+    return new Date(Number(expiration));
   }
-  
+
   getLoggedInUser(): UserModel | null {
     return this.isLoggedIn() ? JSON.parse(localStorage.getItem('userId') ?? "null") : null;
   }
 
   public isLoggedIn(): boolean {
-      const expiration = this.getExpiration();
-      return !!expiration && moment().isBefore(expiration);
+    const expiration = this.getExpiration();
+    return !!expiration && Date.now() < expiration.getTime();
   }
 
   isLoggedOut(): boolean {

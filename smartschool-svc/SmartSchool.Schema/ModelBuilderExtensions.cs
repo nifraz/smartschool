@@ -243,7 +243,9 @@ namespace SmartSchool.Schema
                 new() { Year = 1998, StartDate = new DateOnly(1998, 1, 1), EndDate = new DateOnly(1998, 12, 31) },
                 new() { Year = 1999, StartDate = new DateOnly(1999, 1, 1), EndDate = new DateOnly(1999, 12, 31) },
                 new() { Year = 2024, StartDate = new DateOnly(2024, 1, 1), EndDate = new DateOnly(2024, 12, 31) },
-                new() { Year = 2025, StartDate = new DateOnly(2025, 1, 1), EndDate = new DateOnly(2025, 12, 31) }
+                new() { Year = 2025, StartDate = new DateOnly(2025, 1, 1), EndDate = new DateOnly(2025, 12, 31) },
+                new() { Year = 2026, StartDate = new DateOnly(2026, 1, 1), EndDate = new DateOnly(2026, 12, 31) },
+                new() { Year = 2027, StartDate = new DateOnly(2027, 1, 1), EndDate = new DateOnly(2027, 12, 31) }
             );
         }
 

@@ -13,7 +13,6 @@ import { GET_ACADEMIC_YEARS, GET_CLASSES_BY_SCHOOL, GET_SCHOOL_STUDENT_ENROLLMEN
 import { GraphqlService, GraphqlSubscriptionResponse, GraphqlSubscriptionResponseData } from '../../../shared/services/graphql.service';
 import { StudentsService } from '../../../students/students.service';
 import { TitleCaseWithSpacePipe } from "../../../shared/pipes/title-case-with-space.pipe";
-import { LaddaModule } from 'angular2-ladda';
 import { CREATE_SCHOOL_STUDENT_ENROLLMENT, CREATE_SCHOOL_STUDENT_ENROLLMENT_REQUEST, UPDATE_SCHOOL_STUDENT_ENROLLMENT_REQUEST_STATUS } from '../../../shared/mutations';
 import { SCHOOL_STUDENT_ENROLLMENT_PROCESSED, SCHOOL_STUDENT_ENROLLMENT_REQUEST_PROCESSED } from '../../../shared/subscriptions';
 import { MutationResult } from 'apollo-angular';
@@ -32,7 +31,6 @@ import { PopoverModule } from 'ngx-bootstrap/popover';
     MatProgressBarModule,
     RouterLink,
     TitleCaseWithSpacePipe,
-    LaddaModule,
     PopoverModule
   ],
   providers: [

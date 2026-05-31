@@ -35,7 +35,6 @@
               "node_modules/bootstrap/dist/css/bootstrap.min.css",
               "node_modules/ag-grid-community/styles/ag-grid.min.css",
               "node_modules/ag-grid-community/styles/ag-theme-quartz.min.css",
-              "node_modules/ag-grid-community/styles/ag-theme-material.min.css",
               "node_modules/ngx-toastr/toastr.css"
             ],
             "scripts": [

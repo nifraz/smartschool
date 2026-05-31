@@ -35,7 +35,7 @@ import { ToastrService } from 'ngx-toastr';
   styleUrl: './graphql-data-grid.component.scss'
 })
 export class GraphqlDataGridComponent<T extends object> extends BaseComponent implements OnInit, RemoteGridApi<T> {
-  themeClass: string = "ag-theme-material";
+  readonly themeClass = 'ag-theme-quartz';
   
   @Input()collection: string = '';
   @Input()colDefs: ColDef<T>[] = [];

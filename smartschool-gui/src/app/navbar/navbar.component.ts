@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { RouterOutlet, RouterLink, RouterLinkActive, Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
 import { iif, of, Subject, switchMap, takeUntil } from 'rxjs';
 import { ToastrService } from 'ngx-toastr';
 import { BaseComponent } from '../shared/components/base/base.component';
+import { ThemeService } from '../shared/services/theme.service';
 
 @Component({
   selector: 'app-navbar',
@@ -19,6 +20,8 @@ import { BaseComponent } from '../shared/components/base/base.component';
   styleUrl: './navbar.component.scss'
 })
 export class NavbarComponent extends BaseComponent implements OnInit, OnDestroy {
+  readonly themeService = inject(ThemeService);
+
   constructor(
     public authService: AuthService,
     private toastr: ToastrService,

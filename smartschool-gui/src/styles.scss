@@ -3,6 +3,75 @@
 html, body { height: 100%; }
 body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
 
+// ── Smooth theme transitions ───────────────────────────────────────────────
+*,
+*::before,
+*::after {
+  transition:
+    background-color 0.25s ease,
+    color            0.25s ease,
+    border-color     0.25s ease,
+    box-shadow       0.25s ease !important;
+}
+
+// ── Angular Material dark overrides (Bootstrap handles the rest via data-bs-theme)
+.dark-theme {
+  // Dialog / overlay backdrop
+  .mat-mdc-dialog-container .mdc-dialog__surface {
+    background-color: #1e1e2e;
+    color: #e0e0e0;
+  }
+
+  // Form fields
+  .mat-mdc-form-field {
+    --mdc-filled-text-field-container-color: #2a2a3e;
+    --mdc-filled-text-field-label-text-color: #aaa;
+    --mdc-filled-text-field-input-text-color: #e0e0e0;
+  }
+
+  // Progress bar
+  .mat-mdc-progress-bar {
+    --mdc-linear-progress-track-color: #333;
+  }
+
+  // Select panel
+  .mat-mdc-select-panel, .mat-mdc-autocomplete-panel {
+    background-color: #2a2a3e;
+    color: #e0e0e0;
+  }
+
+  .mat-mdc-option {
+    color: #e0e0e0;
+    &:hover { background-color: #3a3a52; }
+  }
+
+  // Slide toggle
+  .mdc-switch { --mdc-switch-track-color: #555; }
+
+  // ── AG Grid Quartz dark mode (CSS custom property overrides) ──────────────
+  .ag-theme-quartz {
+    --ag-background-color: #1f2836;
+    --ag-foreground-color: #ffffff;
+    --ag-border-color: #2d4a70;
+    --ag-secondary-border-color: #2d4a70;
+    --ag-header-background-color: #2c3c4f;
+    --ag-header-foreground-color: #ffffff;
+    --ag-odd-row-background-color: #263545;
+    --ag-row-hover-color: #30495e;
+    --ag-selected-row-background-color: #1a4a6e;
+    --ag-input-focus-border-color: #4a90d9;
+    --ag-chip-background-color: #2d4a70;
+    --ag-range-selection-border-color: #4a90d9;
+    --ag-modal-overlay-background-color: rgba(0, 0, 0, 0.5);
+    --ag-control-panel-background-color: #1f2836;
+    --ag-subheader-background-color: #263545;
+    --ag-invalid-color: #e05c5c;
+    --ag-input-border-color: #2d4a70;
+    --ag-input-background-color: #1f2836;
+    --ag-filter-tool-panel-group-indent: 16px;
+  }
+}
+
 .toast-info {
   background-color: #2196f3 !important; /* Blue */
   color: #fff !important;

@@ -3,7 +3,7 @@ import { provideRouter } from '@angular/router';
 import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { APOLLO_OPTIONS } from 'apollo-angular';
 import { HttpLink } from 'apollo-angular/http';
 import { Apollo } from 'apollo-angular';
@@ -50,8 +50,8 @@ export const appConfig: ApplicationConfig = {
     provideClientHydration(), 
     provideAnimationsAsync(),
     provideNativeDateAdapter(MY_FORMATS),
+    provideHttpClient(withInterceptorsFromDi()),
     importProvidersFrom(
-      HttpClientModule,
       ToastrModule.forRoot(
         {
           timeOut: 5000,

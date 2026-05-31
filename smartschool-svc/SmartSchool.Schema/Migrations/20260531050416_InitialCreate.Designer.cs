@@ -12,8 +12,8 @@ using SmartSchool.Schema;
 namespace SmartSchool.Schema.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20241125170436_CreateInitialSchema")]
-    partial class CreateInitialSchema
+    [Migration("20260531050416_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -1296,6 +1296,60 @@ namespace SmartSchool.Schema.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SmartSchool.Schema.Entities.Locale", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(8)
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<bool>("IsEnabled")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsRtl")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<string>("NativeName")
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("int");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("locale");
+                });
+
+            modelBuilder.Entity("SmartSchool.Schema.Entities.Permission", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.ToTable("permission");
+                });
+
             modelBuilder.Entity("SmartSchool.Schema.Entities.Person", b =>
                 {
                     b.Property<long>("Id")
@@ -1710,6 +1764,74 @@ namespace SmartSchool.Schema.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Qualifications");
+                });
+
+            modelBuilder.Entity("SmartSchool.Schema.Entities.Role", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<DateTime?>("CreatedTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long?>("CreatedUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("DeletedTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long?>("DeletedUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<DateTime?>("LastModifiedTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<long?>("LastModifiedUserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("varchar(128)");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("CreatedUserId");
+
+                    b.HasIndex("DeletedUserId");
+
+                    b.HasIndex("LastModifiedUserId");
+
+                    b.ToTable("role");
+                });
+
+            modelBuilder.Entity("SmartSchool.Schema.Entities.RolePermission", b =>
+                {
+                    b.Property<long>("RoleId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("PermissionId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("RoleId", "PermissionId");
+
+                    b.HasIndex("PermissionId");
+
+                    b.ToTable("role_permission");
                 });
 
             modelBuilder.Entity("SmartSchool.Schema.Entities.School", b =>
@@ -2278,6 +2400,44 @@ namespace SmartSchool.Schema.Migrations
                         });
                 });
 
+            modelBuilder.Entity("SmartSchool.Schema.Entities.Translation", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Key")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("varchar(256)");
+
+                    b.Property<DateTime?>("LastModifiedTime")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("LocaleCode")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<string>("Namespace")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("varchar(64)");
+
+                    b.Property<string>("Value")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("LocaleCode", "Namespace", "Key")
+                        .IsUnique();
+
+                    b.ToTable("translation");
+                });
+
             modelBuilder.Entity("SmartSchool.Schema.Entities.User", b =>
                 {
                     b.Property<long>("Id")
@@ -2363,7 +2523,7 @@ namespace SmartSchool.Schema.Migrations
                             Id = 1L,
                             IsEmailVerified = true,
                             IsMobileNoVerified = true,
-                            Password = "$argon2id$v=19$m=65536,t=3,p=1$Vbjoop3zv1eozPdNkc1KCg$RxO2EhD7NqRKOEKrjKMQZaTX8HjvMlbFouR6v89sGgM",
+                            Password = "$argon2id$v=19$m=65536,t=3,p=1$8hxLdUAbY1JdrK/gXAavSg$Nc31zcxsRBWL/0aV8l6m3dv65hWYbnh0ohX69aMx5+Q",
                             PersonId = 1L
                         },
                         new
@@ -2371,7 +2531,7 @@ namespace SmartSchool.Schema.Migrations
                             Id = 2L,
                             IsEmailVerified = true,
                             IsMobileNoVerified = true,
-                            Password = "$argon2id$v=19$m=65536,t=3,p=1$ucnoxkhMm3JxmhBVokf2+A$G58JgQi1upJ/3Dv4x0G3MGTeN3G8PtFyKMVsjBINBFA",
+                            Password = "$argon2id$v=19$m=65536,t=3,p=1$OmLGkbZg/ytnRWiYdOzioQ$86pJtyj5gEL08sfoZWb0sLg2BJbkfXYu7YxpyGnnglk",
                             PersonId = 2L
                         },
                         new
@@ -2379,7 +2539,7 @@ namespace SmartSchool.Schema.Migrations
                             Id = 3L,
                             IsEmailVerified = true,
                             IsMobileNoVerified = true,
-                            Password = "$argon2id$v=19$m=65536,t=3,p=1$K+izRe249tJE8ORYFFqedA$XqBPsZ1vxCupiu9D08Ozh4+nL21OxpJB9nrh7EXDMh4",
+                            Password = "$argon2id$v=19$m=65536,t=3,p=1$/lf++LrhdKu95R4HVSi9hQ$wUqX584QW2cZJHRmmxnw8lSpMtxsOymoJu0j3P3ou7s",
                             PersonId = 3L
                         },
                         new
@@ -2387,7 +2547,7 @@ namespace SmartSchool.Schema.Migrations
                             Id = 4L,
                             IsEmailVerified = true,
                             IsMobileNoVerified = true,
-                            Password = "$argon2id$v=19$m=65536,t=3,p=1$AUiVdNQZaAj/2T9yRkvQ2Q$IyBlj4mzvu90hFnvEqi6fV5uxXDyVZmgNCoU60nDwzo",
+                            Password = "$argon2id$v=19$m=65536,t=3,p=1$qSbNZNaDqjgFQHGLmUM9Ug$KMbEp1O+364NuBkpJ+wuF1VwP7QoiOjY81SwC1XeV74",
                             PersonId = 4L
                         },
                         new
@@ -2395,9 +2555,24 @@ namespace SmartSchool.Schema.Migrations
                             Id = 5L,
                             IsEmailVerified = true,
                             IsMobileNoVerified = true,
-                            Password = "$argon2id$v=19$m=65536,t=3,p=1$fnbBrv0RGHd7l/3Ir3xqFQ$dgLDkOmAcwHbdXbQLqhmO+3FVq+OjsfJQOoaNuHofS0",
+                            Password = "$argon2id$v=19$m=65536,t=3,p=1$u1r59/Leyd7DAUnRDSEUeQ$X0vP9sMxf7o31OVemUPmesVU5LQvFZ2UpBSbmqeyVo0",
                             PersonId = 5L
                         });
+                });
+
+            modelBuilder.Entity("SmartSchool.Schema.Entities.UserRoleLink", b =>
+                {
+                    b.Property<long>("UserId")
+                        .HasColumnType("bigint");
+
+                    b.Property<long>("RoleId")
+                        .HasColumnType("bigint");
+
+                    b.HasKey("UserId", "RoleId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("user_role");
                 });
 
             modelBuilder.Entity("SmartSchool.Schema.Entities.Zone", b =>
@@ -2913,6 +3088,46 @@ namespace SmartSchool.Schema.Migrations
                     b.Navigation("Person");
                 });
 
+            modelBuilder.Entity("SmartSchool.Schema.Entities.Role", b =>
+                {
+                    b.HasOne("SmartSchool.Schema.Entities.User", "CreatedUser")
+                        .WithMany()
+                        .HasForeignKey("CreatedUserId");
+
+                    b.HasOne("SmartSchool.Schema.Entities.User", "DeletedUser")
+                        .WithMany()
+                        .HasForeignKey("DeletedUserId");
+
+                    b.HasOne("SmartSchool.Schema.Entities.User", "LastModifiedUser")
+                        .WithMany()
+                        .HasForeignKey("LastModifiedUserId");
+
+                    b.Navigation("CreatedUser");
+
+                    b.Navigation("DeletedUser");
+
+                    b.Navigation("LastModifiedUser");
+                });
+
+            modelBuilder.Entity("SmartSchool.Schema.Entities.RolePermission", b =>
+                {
+                    b.HasOne("SmartSchool.Schema.Entities.Permission", "Permission")
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("PermissionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartSchool.Schema.Entities.Role", "Role")
+                        .WithMany("RolePermissions")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Permission");
+
+                    b.Navigation("Role");
+                });
+
             modelBuilder.Entity("SmartSchool.Schema.Entities.School", b =>
                 {
                     b.HasOne("SmartSchool.Schema.Entities.User", "CreatedUser")
@@ -3199,6 +3414,17 @@ namespace SmartSchool.Schema.Migrations
                     b.Navigation("Person");
                 });
 
+            modelBuilder.Entity("SmartSchool.Schema.Entities.Translation", b =>
+                {
+                    b.HasOne("SmartSchool.Schema.Entities.Locale", "Locale")
+                        .WithMany()
+                        .HasForeignKey("LocaleCode")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Locale");
+                });
+
             modelBuilder.Entity("SmartSchool.Schema.Entities.User", b =>
                 {
                     b.HasOne("SmartSchool.Schema.Entities.User", "CreatedUser")
@@ -3226,6 +3452,25 @@ namespace SmartSchool.Schema.Migrations
                     b.Navigation("LastModifiedUser");
 
                     b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("SmartSchool.Schema.Entities.UserRoleLink", b =>
+                {
+                    b.HasOne("SmartSchool.Schema.Entities.Role", "Role")
+                        .WithMany("UserRoles")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("SmartSchool.Schema.Entities.User", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Role");
+
+                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("SmartSchool.Schema.Entities.Zone", b =>
@@ -3268,6 +3513,11 @@ namespace SmartSchool.Schema.Migrations
                     b.Navigation("Classes");
                 });
 
+            modelBuilder.Entity("SmartSchool.Schema.Entities.Permission", b =>
+                {
+                    b.Navigation("RolePermissions");
+                });
+
             modelBuilder.Entity("SmartSchool.Schema.Entities.Person", b =>
                 {
                     b.Navigation("Person1Relationships");
@@ -3300,6 +3550,13 @@ namespace SmartSchool.Schema.Migrations
             modelBuilder.Entity("SmartSchool.Schema.Entities.Qualification", b =>
                 {
                     b.Navigation("PersonQualifications");
+                });
+
+            modelBuilder.Entity("SmartSchool.Schema.Entities.Role", b =>
+                {
+                    b.Navigation("RolePermissions");
+
+                    b.Navigation("UserRoles");
                 });
 
             modelBuilder.Entity("SmartSchool.Schema.Entities.School", b =>

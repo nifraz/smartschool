@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace SmartSchool.Schema.Migrations
 {
     /// <inheritdoc />
-    public partial class CreateInitialSchema : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -50,6 +50,43 @@ namespace SmartSchool.Schema.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "locale",
+                columns: table => new
+                {
+                    Code = table.Column<string>(type: "varchar(8)", maxLength: 8, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Name = table.Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    NativeName = table.Column<string>(type: "varchar(64)", maxLength: 64, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    IsRtl = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsEnabled = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    SortOrder = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_locale", x => x.Code);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "permission",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Code = table.Column<string>(type: "varchar(128)", maxLength: 128, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Description = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4")
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_permission", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "Provinces",
                 columns: table => new
                 {
@@ -81,6 +118,34 @@ namespace SmartSchool.Schema.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Qualifications", x => x.Id);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "translation",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    LocaleCode = table.Column<string>(type: "varchar(8)", maxLength: 8, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Namespace = table.Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Key = table.Column<string>(type: "varchar(256)", maxLength: 256, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Value = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    LastModifiedTime = table.Column<DateTime>(type: "datetime(6)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_translation", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_translation_locale_LocaleCode",
+                        column: x => x.LocaleCode,
+                        principalTable: "locale",
+                        principalColumn: "Code",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -481,6 +546,46 @@ namespace SmartSchool.Schema.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "role",
+                columns: table => new
+                {
+                    Id = table.Column<long>(type: "bigint", nullable: false)
+                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
+                    Code = table.Column<string>(type: "varchar(64)", maxLength: 64, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Name = table.Column<string>(type: "varchar(128)", maxLength: 128, nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Notes = table.Column<string>(type: "longtext", nullable: true)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    CreatedTime = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    LastModifiedTime = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    DeletedTime = table.Column<DateTime>(type: "datetime(6)", nullable: true),
+                    CreatedUserId = table.Column<long>(type: "bigint", nullable: true),
+                    LastModifiedUserId = table.Column<long>(type: "bigint", nullable: true),
+                    DeletedUserId = table.Column<long>(type: "bigint", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_role", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_role_Users_CreatedUserId",
+                        column: x => x.CreatedUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_role_Users_DeletedUserId",
+                        column: x => x.DeletedUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_role_Users_LastModifiedUserId",
+                        column: x => x.LastModifiedUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id");
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "Schools",
                 columns: table => new
                 {
@@ -623,6 +728,56 @@ namespace SmartSchool.Schema.Migrations
                         column: x => x.LastModifiedUserId,
                         principalTable: "Users",
                         principalColumn: "Id");
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "role_permission",
+                columns: table => new
+                {
+                    RoleId = table.Column<long>(type: "bigint", nullable: false),
+                    PermissionId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_role_permission", x => new { x.RoleId, x.PermissionId });
+                    table.ForeignKey(
+                        name: "FK_role_permission_permission_PermissionId",
+                        column: x => x.PermissionId,
+                        principalTable: "permission",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_role_permission_role_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "role",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
+                name: "user_role",
+                columns: table => new
+                {
+                    UserId = table.Column<long>(type: "bigint", nullable: false),
+                    RoleId = table.Column<long>(type: "bigint", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_user_role", x => new { x.UserId, x.RoleId });
+                    table.ForeignKey(
+                        name: "FK_user_role_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_user_role_role_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "role",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
                 })
                 .Annotation("MySql:CharSet", "utf8mb4");
 
@@ -1018,11 +1173,11 @@ namespace SmartSchool.Schema.Migrations
                 columns: new[] { "Id", "CreatedTime", "CreatedUserId", "DeletedTime", "DeletedUserId", "EmailOtp", "EmailOtpExpiration", "EmailToken", "EmailTokenExpiration", "IsEmailVerified", "IsMobileNoVerified", "LastModifiedTime", "LastModifiedUserId", "MobileNoOtp", "MobileNoOtpExpiration", "MobileNoToken", "MobileNoTokenExpiration", "Notes", "Password", "PersonId" },
                 values: new object[,]
                 {
-                    { 1L, null, null, null, null, null, null, null, null, true, true, null, null, null, null, null, null, null, "$argon2id$v=19$m=65536,t=3,p=1$Vbjoop3zv1eozPdNkc1KCg$RxO2EhD7NqRKOEKrjKMQZaTX8HjvMlbFouR6v89sGgM", 1L },
-                    { 2L, null, null, null, null, null, null, null, null, true, true, null, null, null, null, null, null, null, "$argon2id$v=19$m=65536,t=3,p=1$ucnoxkhMm3JxmhBVokf2+A$G58JgQi1upJ/3Dv4x0G3MGTeN3G8PtFyKMVsjBINBFA", 2L },
-                    { 3L, null, null, null, null, null, null, null, null, true, true, null, null, null, null, null, null, null, "$argon2id$v=19$m=65536,t=3,p=1$K+izRe249tJE8ORYFFqedA$XqBPsZ1vxCupiu9D08Ozh4+nL21OxpJB9nrh7EXDMh4", 3L },
-                    { 4L, null, null, null, null, null, null, null, null, true, true, null, null, null, null, null, null, null, "$argon2id$v=19$m=65536,t=3,p=1$AUiVdNQZaAj/2T9yRkvQ2Q$IyBlj4mzvu90hFnvEqi6fV5uxXDyVZmgNCoU60nDwzo", 4L },
-                    { 5L, null, null, null, null, null, null, null, null, true, true, null, null, null, null, null, null, null, "$argon2id$v=19$m=65536,t=3,p=1$fnbBrv0RGHd7l/3Ir3xqFQ$dgLDkOmAcwHbdXbQLqhmO+3FVq+OjsfJQOoaNuHofS0", 5L }
+                    { 1L, null, null, null, null, null, null, null, null, true, true, null, null, null, null, null, null, null, "$argon2id$v=19$m=65536,t=3,p=1$8hxLdUAbY1JdrK/gXAavSg$Nc31zcxsRBWL/0aV8l6m3dv65hWYbnh0ohX69aMx5+Q", 1L },
+                    { 2L, null, null, null, null, null, null, null, null, true, true, null, null, null, null, null, null, null, "$argon2id$v=19$m=65536,t=3,p=1$OmLGkbZg/ytnRWiYdOzioQ$86pJtyj5gEL08sfoZWb0sLg2BJbkfXYu7YxpyGnnglk", 2L },
+                    { 3L, null, null, null, null, null, null, null, null, true, true, null, null, null, null, null, null, null, "$argon2id$v=19$m=65536,t=3,p=1$/lf++LrhdKu95R4HVSi9hQ$wUqX584QW2cZJHRmmxnw8lSpMtxsOymoJu0j3P3ou7s", 3L },
+                    { 4L, null, null, null, null, null, null, null, null, true, true, null, null, null, null, null, null, null, "$argon2id$v=19$m=65536,t=3,p=1$qSbNZNaDqjgFQHGLmUM9Ug$KMbEp1O+364NuBkpJ+wuF1VwP7QoiOjY81SwC1XeV74", 4L },
+                    { 5L, null, null, null, null, null, null, null, null, true, true, null, null, null, null, null, null, null, "$argon2id$v=19$m=65536,t=3,p=1$u1r59/Leyd7DAUnRDSEUeQ$X0vP9sMxf7o31OVemUPmesVU5LQvFZ2UpBSbmqeyVo0", 5L }
                 });
 
             migrationBuilder.InsertData(
@@ -1293,6 +1448,12 @@ namespace SmartSchool.Schema.Migrations
                 column: "ZoneId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_permission_Code",
+                table: "permission",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_PersonQualifications_CreatedUserId",
                 table: "PersonQualifications",
                 column: "CreatedUserId");
@@ -1377,6 +1538,32 @@ namespace SmartSchool.Schema.Migrations
                 table: "Principals",
                 column: "PersonId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_role_Code",
+                table: "role",
+                column: "Code",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_role_CreatedUserId",
+                table: "role",
+                column: "CreatedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_role_DeletedUserId",
+                table: "role",
+                column: "DeletedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_role_LastModifiedUserId",
+                table: "role",
+                column: "LastModifiedUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_role_permission_PermissionId",
+                table: "role_permission",
+                column: "PermissionId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SchoolPrincipalEnrollments_CreatedUserId",
@@ -1581,6 +1768,17 @@ namespace SmartSchool.Schema.Migrations
                 table: "Teachers",
                 column: "PersonId",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_translation_LocaleCode_Namespace_Key",
+                table: "translation",
+                columns: new[] { "LocaleCode", "Namespace", "Key" },
+                unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_user_role_RoleId",
+                table: "user_role",
+                column: "RoleId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Users_CreatedUserId",
@@ -1811,10 +2009,19 @@ namespace SmartSchool.Schema.Migrations
                 name: "PersonRelationships");
 
             migrationBuilder.DropTable(
+                name: "role_permission");
+
+            migrationBuilder.DropTable(
                 name: "SchoolPrincipalEnrollments");
 
             migrationBuilder.DropTable(
                 name: "SchoolTeacherEnrollmentRequests");
+
+            migrationBuilder.DropTable(
+                name: "translation");
+
+            migrationBuilder.DropTable(
+                name: "user_role");
 
             migrationBuilder.DropTable(
                 name: "SchoolStudentEnrollments");
@@ -1829,7 +2036,16 @@ namespace SmartSchool.Schema.Migrations
                 name: "Qualifications");
 
             migrationBuilder.DropTable(
+                name: "permission");
+
+            migrationBuilder.DropTable(
                 name: "Principals");
+
+            migrationBuilder.DropTable(
+                name: "locale");
+
+            migrationBuilder.DropTable(
+                name: "role");
 
             migrationBuilder.DropTable(
                 name: "SchoolStudentEnrollmentRequests");

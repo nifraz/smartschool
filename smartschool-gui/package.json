@@ -27,7 +27,7 @@
     "@ngx-translate/core": "^15.0.0",
     "ag-grid-angular": "^31.3.2",
     "ag-grid-community": "^31.3.2",
-    "angular2-ladda": "^5.0.0",
+    "@apollo/client": "^3.11.8",
     "apollo-angular": "^7.0.2",
     "bootstrap": "^5.3.3",
     "graphql": "^15.9.0",

@@ -1,16 +1,18 @@
-<mat-progress-bar *ngIf="isLoading" mode="query"></mat-progress-bar>
-
 <div class="m-3">
-    <div class="modal-header p-2 d-flex justify-content-between">
-        <h2 class="modal-title">School Report</h2>
-        <button type="button" class="btn btn-secondary" aria-label="Close" (click)="closeModal()">
-            <span>&times;</span>
-        </button>
-    </div>
-    <mat-dialog-content>
+  <!-- Header -->
+  <div class="modal-header p-2 d-flex justify-content-between align-items-center mb-3">
+    <h2 class="modal-title mb-0" style="color: var(--ss-text)">School Report</h2>
+    <button type="button" class="btn btn-sm btn-outline-secondary" aria-label="Close" (click)="closeModal()">
+      <i class="bi bi-x-lg"></i>
+    </button>
+  </div>
 
-      <mat-form-field>
-        <mat-label>Enter a date range</mat-label>
+  <mat-dialog-content>
+
+    <!-- Date range filter -->
+    <div class="date-range-row mb-4">
+      <mat-form-field appearance="outline" class="date-range-field">
+        <mat-label>Filter by date range</mat-label>
         <mat-date-range-input [rangePicker]="picker">
           <input matStartDate placeholder="Start date" #startDate>
           <input matEndDate placeholder="End date" #endDate (dateChange)="onDateRangeChange(startDate.value, endDate.value)">
@@ -19,209 +21,153 @@
         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-date-range-picker #picker></mat-date-range-picker>
       </mat-form-field>
-      
-      <div class="container mt-5" id="schoolReport" *ngIf="report">
-            <!-- Report Header -->
-            <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
-              <div>
-                <h1 class="h4">School Report</h1>
-                <p class="mb-0">Generated on: {{ currentDate }}</p>
-              </div>
-              <img src="https://via.placeholder.com/100x100" alt="School Logo" class="img-fluid">
-            </div>
-          
-            <!-- General Information -->
-            <div class="mb-4">
-              <h2 class="h5">General Information</h2>
-              <table class="table table-bordered">
-                <tbody>
-                  <tr>
-                    <th>Name</th>
-                    <td>{{ report.school?.name }}</td>
-                  </tr>
-                  <tr>
-                    <th>Census No</th>
-                    <td>{{ report.school?.censusNo }}</td>
-                  </tr>
-                  <tr>
-                    <th>Phone No</th>
-                    <td>{{ report.school?.phoneNo }}</td>
-                  </tr>
-                  <tr>
-                    <th>Email</th>
-                    <td>{{ report.school?.email }}</td>
-                  </tr>
-                  <tr>
-                    <th>Address</th>
-                    <td>{{ report.school?.location }}</td>
-                  </tr>
-                  <tr>
-                    <th>Division</th>
-                    <td>{{ report.school?.division?.label }}</td>
-                  </tr>
-                  <tr>
-                    <th>Principal</th>
-                    <td>{{ report.principal?.fullName }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          
-            <!-- Key Metrics -->
-            <div class="mb-4">
-              <h2 class="h5">Key Metrics
-                @if (startTime && endTime) {
-                  ({{startDate.value}} - {{endDate.value}})
-                }
-              </h2>
-              <table class="table table-bordered">
-                <thead>
-                  <tr>
-                    <th>Metric</th>
-                    <th>Value</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Total No of Student Enrollment Requests</td>
-                    <td>{{ report.noOfStudentEnrollmentRequests }}</td>
-                  </tr>
-                  <tr>
-                    <td>No of Approved Student Enrollment Requests</td>
-                    <td>{{ report.noOfApprovedStudentEnrollmentRequests }}</td>
-                  </tr>
-                  <tr>
-                    <td>No of Rejected Student Enrollment Requests</td>
-                    <td>{{ report.noOfRejectedStudentEnrollmentRequests }}</td>
-                  </tr>
-                  <tr>
-                    <td>No of Cancelled Student Enrollment Requests</td>
-                    <td>{{ report.noOfCancelledStudentEnrollmentRequests }}</td>
-                  </tr>
+    </div>
 
-                  <tr>
-                    <td>Total No of Student Enrollments</td>
-                    <td>{{ report.noOfStudentEnrollments }}</td>
-                  </tr>
-                  <tr>
-                    <td>No of Active Student Enrollments</td>
-                    <td>{{ report.noOfActiveStudentEnrollments }}</td>
-                  </tr>
-                  <tr>
-                    <td>No of Left Student Enrollments</td>
-                    <td>{{ report.noOfLeftStudentEnrollments }}</td>
-                  </tr>
-                  <tr>
-                    <td>No of Completed Student Enrollments</td>
-                    <td>{{ report.noOfCompletedStudentEnrollments }}</td>
-                  </tr>
-                  <tr>
-                    <td>No of Cancelled Student Enrollments</td>
-                    <td>{{ report.noOfCancelledStudentEnrollments }}</td>
-                  </tr>
+    <!-- Loading skeletons -->
+    @if (isLoading) {
+      <div class="skeleton-report">
+        <app-skeleton height="1.5rem" width="40%" mb="16px" />
+        <app-skeleton height="1rem" mb="8px" />
+        <app-skeleton height="1rem" mb="8px" />
+        <app-skeleton height="1rem" mb="8px" />
+        <app-skeleton height="1rem" mb="24px" />
+        <app-skeleton height="1.5rem" width="35%" mb="16px" />
+        <app-skeleton height="1rem" mb="8px" />
+        <app-skeleton height="1rem" mb="8px" />
+        <app-skeleton height="1rem" mb="8px" />
+        <app-skeleton height="1rem" mb="8px" />
+        <app-skeleton height="1rem" mb="8px" />
+      </div>
+    }
 
-                  <tr>
-                    <td>Total No of Teacher Enrollments</td>
-                    <td>{{ report.noOfTeacherEnrollments }}</td>
-                  </tr>
-                  <tr>
-                    <td>No of Active Teacher Enrollments</td>
-                    <td>{{ report.noOfActiveTeacherEnrollments }}</td>
-                  </tr>
-                  <tr>
-                    <td>No of Retired Teacher Enrollments</td>
-                    <td>{{ report.noOfRetiredTeacherEnrollments }}</td>
-                  </tr>
-                  <tr>
-                    <td>No of Resigned Teacher Enrollments</td>
-                    <td>{{ report.noOfResignedTeacherEnrollments }}</td>
-                  </tr>
-                  <tr>
-                    <td>No of Cancelled Teacher Enrollments</td>
-                    <td>{{ report.noOfCancelledTeacherEnrollments }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          
-            <!-- Performance Overview -->
-            <div class="mb-4">
-              <h2 class="h5">Performance Overview</h2>
-              <table class="table table-bordered">
-                <thead>
-                  <tr>
-                    <th>Year</th>
-                    <th>Performance Index</th>
-                    <th>Average Score</th>
-                    <th>Grade</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr *ngFor="let performance of school.performance">
-                    <td>{{ performance.year }}</td>
-                    <td>{{ performance.index }}</td>
-                    <td>{{ performance.averageScore }}</td>
-                    <td>{{ performance.grade }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          
-            <!-- Financial Overview -->
-            <div class="mb-4">
-              <h2 class="h5">Financial Overview</h2>
-              <table class="table table-bordered">
-                <thead>
-                  <tr>
-                    <th>Category</th>
-                    <th>Amount</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>Total Funds</td>
-                    <td>${{ school.financials.totalFunds | number }}</td>
-                  </tr>
-                  <tr>
-                    <td>Grants</td>
-                    <td>${{ school.financials.grants | number }}</td>
-                  </tr>
-                  <tr>
-                    <td>Expenditures</td>
-                    <td>${{ school.financials.expenditures | number }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          
-            <!-- Events Summary -->
-            <div class="mb-4">
-              <h2 class="h5">Events Summary</h2>
-              <ul>
-                <li *ngFor="let event of school.events">
-                  <strong>{{ event.name }}</strong> - {{ event.date | date }} ({{ event.description }})
-                </li>
-              </ul>
-            </div>
-          
-            <!-- Notable Achievements -->
-            <div class="mb-4">
-              <h2 class="h5">Notable Achievements</h2>
-              <ul>
-                <li *ngFor="let achievement of school.achievements">
-                  {{ achievement }}
-                </li>
-              </ul>
-            </div>
+    <!-- Report content -->
+    @if (!isLoading && report) {
+      <div id="schoolReport" class="report-body">
+
+        <!-- Report header -->
+        <div class="report-title-row">
+          <div>
+            <h1 class="report-main-title">School Report</h1>
+            <p class="report-meta">Generated on {{ currentDate }}</p>
+          </div>
+          <div class="report-logo-placeholder">
+            <i class="bi bi-building" style="font-size: 2rem; color: var(--ss-accent)"></i>
+          </div>
         </div>
-    </mat-dialog-content>
-    <mat-dialog-actions>
-      <!-- Print Button -->
-      <button mat-button class="btn btn-primary" (click)="printReport('schoolReport')">
-        <i class="bi bi-printer"></i> Print Report
+
+        <!-- General Information -->
+        <section class="report-section">
+          <h2 class="report-section-title">General Information</h2>
+          <table class="report-table">
+            <tbody>
+              <tr><th>Name</th><td>{{ report.school?.name }}</td></tr>
+              <tr><th>Census No</th><td>{{ report.school?.censusNo }}</td></tr>
+              <tr><th>Phone No</th><td>{{ report.school?.phoneNo }}</td></tr>
+              <tr><th>Email</th><td>{{ report.school?.email }}</td></tr>
+              <tr><th>Address</th><td>{{ report.school?.location }}</td></tr>
+              <tr><th>Division</th><td>{{ report.school?.division?.label }}</td></tr>
+              <tr><th>Principal</th><td>{{ report.principal?.fullName }}</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Key Metrics -->
+        <section class="report-section">
+          <h2 class="report-section-title">
+            Key Metrics
+            @if (startTime && endTime) {
+              <span class="report-date-range">({{ startDate.value }} – {{ endDate.value }})</span>
+            }
+          </h2>
+          <table class="report-table">
+            <thead><tr><th>Metric</th><th>Value</th></tr></thead>
+            <tbody>
+              <tr><td>Total Student Enrollment Requests</td><td class="metric-val">{{ report.noOfStudentEnrollmentRequests }}</td></tr>
+              <tr><td>Approved Requests</td><td class="metric-val">{{ report.noOfApprovedStudentEnrollmentRequests }}</td></tr>
+              <tr><td>Rejected Requests</td><td class="metric-val">{{ report.noOfRejectedStudentEnrollmentRequests }}</td></tr>
+              <tr><td>Cancelled Requests</td><td class="metric-val">{{ report.noOfCancelledStudentEnrollmentRequests }}</td></tr>
+              <tr class="row-divider"><td colspan="2"></td></tr>
+              <tr><td>Total Student Enrollments</td><td class="metric-val">{{ report.noOfStudentEnrollments }}</td></tr>
+              <tr><td>Active Student Enrollments</td><td class="metric-val accent">{{ report.noOfActiveStudentEnrollments }}</td></tr>
+              <tr><td>Left Enrollments</td><td class="metric-val">{{ report.noOfLeftStudentEnrollments }}</td></tr>
+              <tr><td>Completed Enrollments</td><td class="metric-val">{{ report.noOfCompletedStudentEnrollments }}</td></tr>
+              <tr><td>Cancelled Enrollments</td><td class="metric-val">{{ report.noOfCancelledStudentEnrollments }}</td></tr>
+              <tr class="row-divider"><td colspan="2"></td></tr>
+              <tr><td>Total Teacher Enrollments</td><td class="metric-val">{{ report.noOfTeacherEnrollments }}</td></tr>
+              <tr><td>Active Teacher Enrollments</td><td class="metric-val accent">{{ report.noOfActiveTeacherEnrollments }}</td></tr>
+              <tr><td>Retired Enrollments</td><td class="metric-val">{{ report.noOfRetiredTeacherEnrollments }}</td></tr>
+              <tr><td>Resigned Enrollments</td><td class="metric-val">{{ report.noOfResignedTeacherEnrollments }}</td></tr>
+              <tr><td>Cancelled Teacher Enrollments</td><td class="metric-val">{{ report.noOfCancelledTeacherEnrollments }}</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Performance Overview (demo data) -->
+        <section class="report-section">
+          <h2 class="report-section-title">Performance Overview</h2>
+          <table class="report-table">
+            <thead><tr><th>Year</th><th>Index</th><th>Avg Score</th><th>Grade</th></tr></thead>
+            <tbody>
+              @for (p of school.performance; track p.year) {
+                <tr>
+                  <td>{{ p.year }}</td>
+                  <td>{{ p.index }}</td>
+                  <td>{{ p.averageScore }}</td>
+                  <td>{{ p.grade }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Financial Overview (demo data) -->
+        <section class="report-section">
+          <h2 class="report-section-title">Financial Overview</h2>
+          <table class="report-table">
+            <thead><tr><th>Category</th><th>Amount</th></tr></thead>
+            <tbody>
+              <tr><td>Total Funds</td><td>${{ school.financials.totalFunds | number }}</td></tr>
+              <tr><td>Grants</td><td>${{ school.financials.grants | number }}</td></tr>
+              <tr><td>Expenditures</td><td>${{ school.financials.expenditures | number }}</td></tr>
+            </tbody>
+          </table>
+        </section>
+
+        <!-- Events Summary (demo data) -->
+        <section class="report-section">
+          <h2 class="report-section-title">Events Summary</h2>
+          <ul class="report-list">
+            @for (event of school.events; track event.name) {
+              <li><strong>{{ event.name }}</strong> – {{ event.date | date }} <span class="text-muted">({{ event.description }})</span></li>
+            }
+          </ul>
+        </section>
+
+        <!-- Notable Achievements (demo data) -->
+        <section class="report-section">
+          <h2 class="report-section-title">Notable Achievements</h2>
+          <ul class="report-list">
+            @for (a of school.achievements; track $index) {
+              <li>{{ a }}</li>
+            }
+          </ul>
+        </section>
+
+      </div>
+    }
+
+    @if (!isLoading && !report) {
+      <app-empty-state icon="description" title="No report data" message="Select a date range or check your connection." />
+    }
+
+  </mat-dialog-content>
+
+  <mat-dialog-actions align="end">
+    <button mat-button (click)="closeModal()">Close</button>
+    @if (report) {
+      <button mat-flat-button color="primary" (click)="printReport('schoolReport')">
+        <i class="bi bi-printer me-1"></i>Print Report
       </button>
-      <!-- <button mat-dialog-close>Cancel</button> -->
-      <!-- The mat-dialog-close directive optionally accepts a value as a result for the dialog. -->
-      <!-- <button mat-button [mat-dialog-close]="true">Delete</button> -->
-    </mat-dialog-actions>
+    }
+  </mat-dialog-actions>
 </div>

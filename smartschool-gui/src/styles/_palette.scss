@@ -1,0 +1,11 @@
+// ── Accent color palettes ─────────────────────────────────────────────────────
+// Each palette maps to: (accent, accent-light, accent-dark, accent-rgb)
+// ThemeService.applyAccent() writes these values to :root CSS vars at runtime.
+// This file is a reference — it is not imported into the compiled bundle.
+// The actual runtime values come from theme.service.ts's PALETTES constant.
+
+// indigo: #4f46e5 / #818cf8 / #3730a3  / 79,70,229
+// teal:   #0d9488 / #2dd4bf / #0f766e  / 13,148,136
+// rose:   #e11d48 / #fb7185 / #be123c  / 225,29,72
+// amber:  #d97706 / #fbbf24 / #b45309  / 217,119,6
+// slate:  #475569 / #94a3b8 / #334155  / 71,85,105

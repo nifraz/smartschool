@@ -1,9 +1,10 @@
 import { Component, Inject, OnInit } from '@angular/core';
 import { BaseComponent } from '../../shared/components/base/base.component';
 import { MAT_DIALOG_DATA, MatDialogActions, MatDialogClose, MatDialogContent, MatDialogRef } from '@angular/material/dialog';
-import { ToastrService } from 'ngx-toastr';
+import { ToastService } from '../../shared/services/toast.service';
 import { ErrorAlertComponent } from "../../shared/components/error-alert/error-alert.component";
-import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
 import { CommonModule } from '@angular/common';
 import { MatError, MatFormField, MatHint, MatLabel } from '@angular/material/form-field';
 import { MatDatepickerModule, MatDatepickerToggle, MatDateRangeInput, MatDateRangePicker } from '@angular/material/datepicker';
@@ -21,7 +22,8 @@ import { convertToISO } from '../../shared/functions';
   standalone: true,
   imports: [
     ErrorAlertComponent,
-    MatProgressBarModule,
+    SkeletonComponent,
+    EmptyStateComponent,
     CommonModule,
     MatDialogContent,
     MatDialogActions,
@@ -51,7 +53,7 @@ export class SchoolReportComponent extends BaseComponent implements OnInit {
   constructor(
     private graphqlService: GraphqlService,
     private dialogRef: MatDialogRef<SchoolReportComponent>,
-    private toastr: ToastrService,
+    private toast: ToastService,
     @Inject(MAT_DIALOG_DATA) public data: any
   ) {
     super();
@@ -114,7 +116,7 @@ export class SchoolReportComponent extends BaseComponent implements OnInit {
     //   if (!confirm("Are you sure you want to close without saving your changes?")) {
     //     return;
     //   }
-    //   this.toastr.warning(`Changes were not saved`, this.typeName);
+    //   this.toast.warning(`Changes were not saved`, this.typeName);
     // }
     this.dialogRef.close();
   }

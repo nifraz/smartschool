@@ -1,0 +1,73 @@
+.avatar-initials-lg {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--ss-accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border: 3px solid var(--ss-accent-dark);
+}
+
+.ss-btn-accent {
+  background-color: var(--ss-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--ss-radius);
+  &:hover { background-color: var(--ss-accent-dark); color: #fff; }
+}
+
+.detail-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--ss-border);
+  font-size: 0.9rem;
+  color: var(--ss-text);
+
+  &:last-child { border-bottom: none; }
+
+  i { color: var(--ss-accent); font-size: 1rem; flex-shrink: 0; }
+}
+
+.enrollment-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.enrollment-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: var(--ss-radius);
+  background: var(--ss-surface);
+  border: 1px solid var(--ss-border);
+  gap: 8px;
+}
+
+.enrollment-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.enrollment-school {
+  font-weight: 600;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.enrollment-meta {
+  font-size: 0.75rem;
+  color: var(--ss-text-muted);
+}

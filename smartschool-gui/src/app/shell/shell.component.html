@@ -1,0 +1,130 @@
+<mat-sidenav-container class="shell-container">
+
+  <!-- ── Sidebar ─────────────────────────────────────────────────────────── -->
+  <mat-sidenav
+    #sidenav
+    [mode]="isMobile ? 'over' : 'side'"
+    [opened]="!isMobile"
+    [class.collapsed]="collapsed && !isMobile"
+    class="sidebar">
+
+    <!-- Logo -->
+    <div class="sidebar-logo">
+      <img src="assets/images/icons8_classroom_200px_1.png" width="28" height="28" alt="SmartSchool">
+      @if (!collapsed || isMobile) {
+        <span class="sidebar-brand">
+          <u>S</u>mart<u>S</u>chool
+          <span class="badge beta-badge">beta</span>
+        </span>
+      }
+    </div>
+
+    <!-- Nav items -->
+    <mat-nav-list class="sidebar-nav">
+      @for (item of visibleNavItems(); track item.route) {
+        <a mat-list-item
+           [routerLink]="item.route"
+           routerLinkActive="active"
+           [matTooltip]="collapsed && !isMobile ? item.label : ''"
+           matTooltipPosition="right"
+           (click)="isMobile && sidenav.close()">
+          <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+          @if (!collapsed || isMobile) {
+            <span matListItemTitle>{{ item.label }}</span>
+          }
+        </a>
+      }
+    </mat-nav-list>
+
+    <!-- Collapse toggle (desktop only) -->
+    @if (!isMobile) {
+      <div class="sidebar-footer">
+        <button mat-icon-button (click)="toggleCollapse()" class="collapse-btn"
+                [matTooltip]="collapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+                matTooltipPosition="right">
+          <mat-icon>{{ collapsed ? 'chevron_right' : 'chevron_left' }}</mat-icon>
+        </button>
+      </div>
+    }
+  </mat-sidenav>
+
+  <!-- ── Main content area ───────────────────────────────────────────────── -->
+  <mat-sidenav-content class="shell-content">
+
+    <!-- Top bar -->
+    <header class="top-bar">
+      <button mat-icon-button (click)="sidenav.toggle()" aria-label="Toggle navigation">
+        <mat-icon>menu</mat-icon>
+      </button>
+
+      <span class="top-bar-spacer"></span>
+
+      <!-- Theme picker -->
+      <app-theme-picker />
+
+      <!-- User menu -->
+      @if (authService.loggedInUser) {
+        <div class="user-menu dropdown">
+          <a href="#" class="user-avatar-btn d-flex align-items-center text-decoration-none"
+             data-bs-toggle="dropdown" aria-expanded="false">
+            @if (authService.loggedInUser.person?.image) {
+              <img [src]="authService.loggedInUser.person!.image"
+                   alt="avatar" width="34" height="34"
+                   class="rounded-circle object-fit-cover border border-2"
+                   [style.border-color]="'var(--ss-accent)'">
+            } @else {
+              <div class="avatar-initials">
+                {{ getInitials(authService.loggedInUser.person?.fullName) }}
+              </div>
+            }
+          </a>
+          <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0">
+            <li class="dropdown-header text-muted small px-3 pt-2">
+              {{ authService.loggedInUser.person?.fullName || authService.loggedInUser.email }}
+            </li>
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item" [routerLink]="['/users', authService.loggedInUser.id]">
+              <mat-icon class="dropdown-icon">person</mat-icon> User Profile
+            </a></li>
+            @if (authService.loggedInUser.studentId) {
+              <li><a class="dropdown-item" [routerLink]="['/students', authService.loggedInUser.studentId]">
+                <mat-icon class="dropdown-icon">school</mat-icon> Student Profile
+              </a></li>
+            }
+            @if (authService.loggedInUser.teacherId) {
+              <li><a class="dropdown-item" [routerLink]="['/teachers', authService.loggedInUser.teacherId]">
+                <mat-icon class="dropdown-icon">person_pin</mat-icon> Teacher Profile
+              </a></li>
+            }
+            @if (authService.loggedInUser.principalId) {
+              <li><a class="dropdown-item" [routerLink]="['/principals', authService.loggedInUser.principalId]">
+                <mat-icon class="dropdown-icon">manage_accounts</mat-icon> Principal Profile
+              </a></li>
+            }
+            @if (authService.loggedInUser.currentSchoolId) {
+              <li><a class="dropdown-item" [routerLink]="['/schools', authService.loggedInUser.currentSchoolId]">
+                <mat-icon class="dropdown-icon">domain</mat-icon> My School
+              </a></li>
+            }
+            <li><hr class="dropdown-divider my-1"></li>
+            <li><a class="dropdown-item text-danger" (click)="onLogout()">
+              <mat-icon class="dropdown-icon">logout</mat-icon> Logout
+            </a></li>
+          </ul>
+        </div>
+      } @else {
+        @if (!isLoading) {
+          <a mat-stroked-button [routerLink]="['/auth', 'login']" class="login-btn">
+            Login
+          </a>
+        }
+      }
+    </header>
+
+    <!-- Page content -->
+    <main class="main-content">
+      <router-outlet />
+    </main>
+
+  </mat-sidenav-content>
+</mat-sidenav-container>

@@ -1,0 +1,48 @@
+// ── SmartSchool Design Tokens ─────────────────────────────────────────────────
+// All CSS custom properties live here. Dark-mode overrides swap the surface/text
+// values; accent vars are swapped by ThemeService.applyAccent().
+
+:root {
+  // ── Surfaces ──────────────────────────────────────────────────────────────
+  --ss-bg:        #ffffff;
+  --ss-surface:   #f8f9fa;
+  --ss-surface-2: #f1f3f5;
+  --ss-border:    rgba(0, 0, 0, 0.1);
+
+  // ── Text ──────────────────────────────────────────────────────────────────
+  --ss-text:       #1a1a2e;
+  --ss-text-muted: #6c757d;
+
+  // ── Accent (swapped at runtime by ThemeService.applyAccent) ───────────────
+  --ss-accent:       #4f46e5;  // indigo default
+  --ss-accent-light: #818cf8;
+  --ss-accent-dark:  #3730a3;
+  --ss-accent-rgb:   79, 70, 229; // for rgba() usage
+
+  // ── Semantic ──────────────────────────────────────────────────────────────
+  --ss-success: #22c55e;
+  --ss-warning: #f59e0b;
+  --ss-danger:  #ef4444;
+  --ss-info:    #3b82f6;
+
+  // ── Sidebar ───────────────────────────────────────────────────────────────
+  --ss-sidebar-width:    240px;
+  --ss-sidebar-collapsed: 64px;
+  --ss-topbar-height:    64px;
+
+  // ── Shape & elevation ─────────────────────────────────────────────────────
+  --ss-radius:    0.5rem;
+  --ss-radius-lg: 1rem;
+  --ss-shadow:    0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --ss-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.12);
+}
+
+// ── Dark mode overrides ───────────────────────────────────────────────────────
+[data-bs-theme="dark"] {
+  --ss-bg:        #0f172a;
+  --ss-surface:   #1e293b;
+  --ss-surface-2: #334155;
+  --ss-border:    rgba(255, 255, 255, 0.08);
+  --ss-text:       #f1f5f9;
+  --ss-text-muted: #94a3b8;
+}

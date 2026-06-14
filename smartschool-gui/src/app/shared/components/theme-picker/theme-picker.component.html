@@ -1,0 +1,31 @@
+<button mat-icon-button
+        [matMenuTriggerFor]="themeMenu"
+        matTooltip="Customize theme"
+        aria-label="Open theme picker">
+  <mat-icon>palette</mat-icon>
+</button>
+
+<mat-menu #themeMenu class="theme-picker-menu">
+  <div class="picker-section-label" (click)="$event.stopPropagation()">Accent color</div>
+  <div class="palette-grid" (click)="$event.stopPropagation()">
+    @for (p of palettes; track p.key) {
+      <button
+        class="swatch"
+        [class.active]="themeService.accent() === p.key"
+        [style.background]="p.color"
+        [matTooltip]="p.label"
+        (click)="themeService.setAccent(p.key)">
+        @if (themeService.accent() === p.key) {
+          <mat-icon class="check-icon">check</mat-icon>
+        }
+      </button>
+    }
+  </div>
+
+  <mat-divider />
+
+  <button mat-menu-item (click)="themeService.toggle()">
+    <mat-icon>{{ themeService.theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</mat-icon>
+    {{ themeService.theme() === 'dark' ? 'Switch to light' : 'Switch to dark' }}
+  </button>
+</mat-menu>

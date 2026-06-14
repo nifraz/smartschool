@@ -1,152 +1,151 @@
-<mat-progress-bar *ngIf="isLoading" mode="query"></mat-progress-bar>
-<div *ngIf="isLoading || record; then content else notFound"></div>
-
-<ng-template #content>
-    <h2 class="mat-h2 m-0 ms-2">Student Details</h2>
-    <div *ngIf="record" class="container mt-4">
-        <div class="row">
-            <!-- Main Info Section -->
-            <div class="col-12 col-md-12 mb-4 text-center mb-4">
-                <img src="assets/images/icons8_student_male_200px.png" alt="{{ record.fullName }}" class="rounded-circle" width="200" height="200">
-                <h2 class="mt-3">{{ record.fullName }}</h2>
-                <p class="text-muted">
-                    <span *ngIf="record.age">
-                        {{ record.age.years }} years, {{ record.age.months }} months, {{ record.age.days }} days old | 
-                    </span>
-                    {{ record.sex | titlecase }}
-                </p>
-                <div class="">
-                    @if (authService.loggedInUser?.principalId || authService.loggedInUser?.teacherId || authService.loggedInUser?.id == record.createdUserId) {
-                        <button class="btn btn-sm btn-primary me-2" (click)="editRecord()">
-                            <i class="bi bi-pencil"></i>
-                            Edit
-                        </button>
-                    }
-                    <!-- @if (authService.loggedInUser?.principalId) {
-                        <button class="btn btn-sm btn-danger me-2" (click)="deleteRecord()">
-                            <i class="bi bi-trash"></i>
-                            Delete
-                        </button>
-                    } -->
-                </div>
-            </div>
-            
-            <!-- Personal Details Section -->
-            <div class="col-12 col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="d-flex justify-content-between">
-                            <div class="card-title">
-                                <i class="bi bi-person"></i> Personal Details
-                            </div>
-
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <p *ngIf="record.nickname"><i class="bi bi-person-circle"></i> Nickname: {{ record.nickname }}</p>
-                        <p *ngIf="record.dateOfBirth"><i class="bi bi-calendar"></i> Date of Birth: {{ record.dateOfBirth | date }}</p>
-                        <p *ngIf="record.bcNo"><i class="bi bi-card-checklist"></i> Birth Certificate No: {{ record.bcNo }}</p>
-                        <p *ngIf="record.nicNo"><i class="bi bi-card-list"></i> NIC No: {{ record.nicNo }}</p>
-                        <p *ngIf="record.passportNo"><i class="bi bi-card-heading"></i> Passport No: {{ record.passportNo }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Contact Info Section -->
-            <div class="col-12 col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="d-flex justify-content-between">
-                            <div class="card-title">
-                                <i class="bi bi-telephone"></i> Contact Info
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <p *ngIf="record.mobileNo">
-                            <i class="bi bi-phone"></i>
-                            <a href="tel:{{ record.mobileNo }}">
-                                {{ record.mobileNo }}
-                            </a>
-                        </p>
-                        <p *ngIf="record.email">
-                            <i class="bi bi-envelope"></i>
-                            <a href="mailto:{{ record.email }}">
-                                {{ record.email }}
-                            </a>
-                        </p>
-                        <p *ngIf="record.address"><i class="bi bi-house"></i> {{ record.address }}</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Academic Info Section -->
-            <div class="col-12 col-md-6 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        <div class="d-flex justify-content-between">
-                            <div class="card-title">
-                                <i class="bi bi-book"></i> Academic Info
-                            </div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Admission Details Section -->
-            <div class="col-12 col-md-6 mb-4">
-                <div class="card">
-                <div class="card-header">
-                    <div class="d-flex justify-content-between">
-                        <div class="card-title">
-                            <i class="bi bi-journal"></i> Enrollment Details
-                        </div>
-                        <div>
-                            @if (authService.loggedInUser?.principalId) {
-                                <button type="button" title="New" class="btn btn-sm btn-primary" (click)="addSchoolStudentEnrollment()">
-                                    <i class="bi bi-plus"></i>
-                                </button>
-                            }
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    @if (record.recentSchoolStudentEnrollments.length) {
-                        <p>Showing latest 10 records (<a [routerLink]="['/schools', record.id, 'student-enrollments']">View all</a>)</p>
-                        <table class="table">
-                            <thead>
-                                <tr>
-                                    <th scope="col">School</th>
-                                    <th scope="col">Enrollment No</th>
-                                    <th scope="col">Time</th>
-                                    <th scope="col">Details</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @for (item of record.recentSchoolStudentEnrollments; track $index) {
-                                    <tr>
-                                        <th scope="row"><a [routerLink]="['/schools', item.schoolId]">{{ item.school?.label }}</a></th>
-                                        <td>{{ item.no }}</td>
-                                        <td>{{ item.time | date }}</td>
-                                        <td><a [routerLink]="['/schools', item.schoolId, 'student-enrollments', item.id]">View</a></td>
-                                    </tr>
-                                }
-                            </tbody>
-                        </table>
-                    }
-                    @else {
-                        <p>No records found.</p>
-                    }
-                </div>
-                </div>
-            </div>
-  
-        </div>
+<!-- ── Loading skeletons ──────────────────────────────────────────────────── -->
+@if (isLoading) {
+  <div class="container mt-4">
+    <div class="row justify-content-center mb-4">
+      <div class="col-auto text-center">
+        <app-skeleton width="120px" height="120px" radius="50%" mb="12px" />
+        <app-skeleton width="180px" height="1.5rem" mb="8px" />
+        <app-skeleton width="120px" height="1rem" />
+      </div>
     </div>
-</ng-template>
+    <div class="row g-4">
+      <div class="col-12 col-md-6"><app-skeleton height="160px" /></div>
+      <div class="col-12 col-md-6"><app-skeleton height="160px" /></div>
+      <div class="col-12 col-md-6"><app-skeleton height="160px" /></div>
+      <div class="col-12 col-md-6"><app-skeleton height="200px" /></div>
+    </div>
+  </div>
+}
 
-<ng-template #notFound>
-    <app-not-found></app-not-found>
-</ng-template>
+<!-- ── Not found ──────────────────────────────────────────────────────────── -->
+@if (!isLoading && !record) {
+  <app-not-found />
+}
+
+<!-- ── Content ────────────────────────────────────────────────────────────── -->
+@if (record) {
+  <div class="container mt-4">
+    <div class="row g-4">
+
+      <!-- Hero / avatar -->
+      <div class="col-12 text-center mb-2">
+        <div class="avatar-initials-lg mx-auto">
+          {{ getInitials(record.fullName) }}
+        </div>
+
+        <h2 class="mt-3 mb-1" style="color: var(--ss-text)">{{ record.fullName }}</h2>
+        <p style="color: var(--ss-text-muted); font-size: 0.9rem">
+          @if (record.age) {
+            {{ record.age.years }} yr{{ record.age.years !== 1 ? 's' : '' }},
+            {{ record.age.months }} mo{{ record.age.months !== 1 ? 's' : '' }} ·
+          }
+          {{ record.sex | titlecase }}
+        </p>
+
+        @if (authService.loggedInUser?.principalId || authService.loggedInUser?.teacherId || authService.loggedInUser?.id == record.createdUserId) {
+          <button class="btn btn-sm ss-btn-accent" (click)="editRecord()">
+            <i class="bi bi-pencil-fill me-1"></i>Edit
+          </button>
+        }
+      </div>
+
+      <!-- Personal Details -->
+      <div class="col-12 col-md-6">
+        <div class="ss-card h-100">
+          <div class="ss-card-header"><i class="bi bi-person me-1"></i>Personal Details</div>
+          @if (record.nickname) {
+            <div class="detail-row"><i class="bi bi-person-circle"></i><span>Nickname: {{ record.nickname }}</span></div>
+          }
+          @if (record.dateOfBirth) {
+            <div class="detail-row"><i class="bi bi-calendar3"></i><span>{{ record.dateOfBirth | date:'mediumDate' }}</span></div>
+          }
+          @if (record.bcNo) {
+            <div class="detail-row"><i class="bi bi-card-checklist"></i><span>BC No: {{ record.bcNo }}</span></div>
+          }
+          @if (record.nicNo) {
+            <div class="detail-row"><i class="bi bi-card-list"></i><span>NIC: {{ record.nicNo }}</span></div>
+          }
+          @if (record.passportNo) {
+            <div class="detail-row"><i class="bi bi-card-heading"></i><span>Passport: {{ record.passportNo }}</span></div>
+          }
+          @if (!record.nickname && !record.dateOfBirth && !record.bcNo && !record.nicNo && !record.passportNo) {
+            <app-empty-state icon="info" title="No personal details" message="Nothing has been recorded yet." />
+          }
+        </div>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="col-12 col-md-6">
+        <div class="ss-card h-100">
+          <div class="ss-card-header"><i class="bi bi-telephone me-1"></i>Contact Info</div>
+          @if (record.mobileNo) {
+            <div class="detail-row">
+              <i class="bi bi-phone"></i>
+              <a [href]="'tel:' + record.mobileNo" class="ss-link">{{ record.mobileNo }}</a>
+            </div>
+          }
+          @if (record.email) {
+            <div class="detail-row">
+              <i class="bi bi-envelope"></i>
+              <a [href]="'mailto:' + record.email" class="ss-link">{{ record.email }}</a>
+            </div>
+          }
+          @if (record.address) {
+            <div class="detail-row"><i class="bi bi-house"></i><span>{{ record.address }}</span></div>
+          }
+          @if (!record.mobileNo && !record.email && !record.address) {
+            <app-empty-state icon="contact_phone" title="No contact info" message="No contact details on file." />
+          }
+        </div>
+      </div>
+
+      <!-- Academic Info -->
+      <div class="col-12 col-md-6">
+        <div class="ss-card h-100">
+          <div class="ss-card-header"><i class="bi bi-book me-1"></i>Academic Info</div>
+          <app-empty-state icon="school" title="Coming soon" message="Academic records will appear here." />
+        </div>
+      </div>
+
+      <!-- Enrollment Details -->
+      <div class="col-12 col-md-6">
+        <div class="ss-card h-100">
+          <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="ss-card-header mb-0"><i class="bi bi-journal me-1"></i>Enrollment Details</div>
+            @if (authService.loggedInUser?.principalId) {
+              <button type="button" class="btn btn-sm ss-btn-accent" (click)="addSchoolStudentEnrollment()">
+                <i class="bi bi-plus"></i> Add
+              </button>
+            }
+          </div>
+
+          @if (record.recentSchoolStudentEnrollments?.length) {
+            <p class="text-muted small mb-2">
+              Showing latest {{ record.recentSchoolStudentEnrollments.length }} records
+              (<a [routerLink]="['/schools', record.id, 'student-enrollments']" class="ss-link">View all</a>)
+            </p>
+            <div class="enrollment-list">
+              @for (item of record.recentSchoolStudentEnrollments; track item.id) {
+                <div class="enrollment-item">
+                  <div class="enrollment-info">
+                    <a [routerLink]="['/schools', item.schoolId]" class="ss-link enrollment-school">
+                      {{ item.school?.label }}
+                    </a>
+                    <span class="enrollment-meta">No. {{ item.no }} · {{ item.time | date:'mediumDate' }}</span>
+                  </div>
+                  <a [routerLink]="['/schools', item.schoolId, 'student-enrollments', item.id]"
+                     class="btn btn-sm btn-outline-secondary">
+                    View
+                  </a>
+                </div>
+              }
+            </div>
+          } @else {
+            <app-empty-state icon="assignment" title="No enrollments" message="This student has no enrollment records." />
+          }
+        </div>
+      </div>
+
+    </div>
+  </div>
+}

@@ -1,9 +1,15 @@
 /* You can add global styles to this file, and also import other style files */
+@use 'styles/tokens';
 
 html, body { height: 100%; }
-body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  background-color: var(--ss-surface);
+  color: var(--ss-text);
+}
 
-// ── Smooth theme transitions ───────────────────────────────────────────────
+// ── Smooth theme transitions ──────────────────────────────────────────────────
 *,
 *::before,
 *::after {
@@ -14,83 +20,74 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
     box-shadow       0.25s ease !important;
 }
 
-// ── Angular Material dark overrides (Bootstrap handles the rest via data-bs-theme)
+// ── Angular Material dark overrides ──────────────────────────────────────────
 .dark-theme {
-  // Dialog / overlay backdrop
   .mat-mdc-dialog-container .mdc-dialog__surface {
-    background-color: #1e1e2e;
-    color: #e0e0e0;
+    background-color: var(--ss-surface);
+    color: var(--ss-text);
   }
 
-  // Form fields
   .mat-mdc-form-field {
-    --mdc-filled-text-field-container-color: #2a2a3e;
-    --mdc-filled-text-field-label-text-color: #aaa;
-    --mdc-filled-text-field-input-text-color: #e0e0e0;
+    --mdc-filled-text-field-container-color: var(--ss-surface-2);
+    --mdc-filled-text-field-label-text-color: var(--ss-text-muted);
+    --mdc-filled-text-field-input-text-color: var(--ss-text);
   }
 
-  // Progress bar
   .mat-mdc-progress-bar {
-    --mdc-linear-progress-track-color: #333;
+    --mdc-linear-progress-track-color: var(--ss-surface-2);
   }
 
-  // Select panel
   .mat-mdc-select-panel, .mat-mdc-autocomplete-panel {
-    background-color: #2a2a3e;
-    color: #e0e0e0;
+    background-color: var(--ss-surface-2);
+    color: var(--ss-text);
   }
 
   .mat-mdc-option {
-    color: #e0e0e0;
-    &:hover { background-color: #3a3a52; }
+    color: var(--ss-text);
+    &:hover { background-color: var(--ss-surface-2); }
   }
 
-  // Slide toggle
-  .mdc-switch { --mdc-switch-track-color: #555; }
-
-  // ── AG Grid Quartz dark mode (CSS custom property overrides) ──────────────
-  .ag-theme-quartz {
-    --ag-background-color: #1f2836;
-    --ag-foreground-color: #ffffff;
-    --ag-border-color: #2d4a70;
-    --ag-secondary-border-color: #2d4a70;
-    --ag-header-background-color: #2c3c4f;
-    --ag-header-foreground-color: #ffffff;
-    --ag-odd-row-background-color: #263545;
-    --ag-row-hover-color: #30495e;
-    --ag-selected-row-background-color: #1a4a6e;
-    --ag-input-focus-border-color: #4a90d9;
-    --ag-chip-background-color: #2d4a70;
-    --ag-range-selection-border-color: #4a90d9;
-    --ag-modal-overlay-background-color: rgba(0, 0, 0, 0.5);
-    --ag-control-panel-background-color: #1f2836;
-    --ag-subheader-background-color: #263545;
-    --ag-invalid-color: #e05c5c;
-    --ag-input-border-color: #2d4a70;
-    --ag-input-background-color: #1f2836;
-    --ag-filter-tool-panel-group-indent: 16px;
-  }
+  .mdc-switch { --mdc-switch-track-color: var(--ss-text-muted); }
 }
 
-.toast-info {
-  background-color: #2196f3 !important; /* Blue */
-  color: #fff !important;
+// ── AG Grid token alignment ───────────────────────────────────────────────────
+.ag-theme-quartz {
+  --ag-background-color:              var(--ss-surface);
+  --ag-header-background-color:       var(--ss-surface-2);
+  --ag-border-color:                  var(--ss-border);
+  --ag-secondary-border-color:        var(--ss-border);
+  --ag-row-hover-color:               rgba(var(--ss-accent-rgb), 0.06);
+  --ag-selected-row-background-color: rgba(var(--ss-accent-rgb), 0.12);
+  --ag-input-focus-border-color:      var(--ss-accent);
+  --ag-range-selection-border-color:  var(--ss-accent);
+  --ag-font-family:                   'Roboto', sans-serif;
 }
 
-.toast-success {
-  background-color: #4caf50 !important; /* Green */
-  color: #fff !important;
+.dark-theme .ag-theme-quartz {
+  --ag-background-color:              #1f2836;
+  --ag-foreground-color:              #ffffff;
+  --ag-header-background-color:       #2c3c4f;
+  --ag-header-foreground-color:       #ffffff;
+  --ag-odd-row-background-color:      #263545;
+  --ag-row-hover-color:               #30495e;
+  --ag-selected-row-background-color: #1a4a6e;
+  --ag-border-color:                  #2d4a70;
+  --ag-secondary-border-color:        #2d4a70;
+  --ag-chip-background-color:         #2d4a70;
+  --ag-control-panel-background-color:#1f2836;
+  --ag-subheader-background-color:    #263545;
+  --ag-input-background-color:        #1f2836;
+  --ag-input-border-color:            #2d4a70;
+  --ag-modal-overlay-background-color:rgba(0, 0, 0, 0.5);
+  --ag-invalid-color:                 var(--ss-danger);
+  --ag-filter-tool-panel-group-indent:16px;
 }
 
-.toast-warning {
-  background-color: #ff9800 !important; /* Orange */
-  color: #fff !important;
-}
-
-.toast-error {
-  background-color: #f44336 !important; /* Red */
-  color: #fff !important;
-}
+// ── Toasts ────────────────────────────────────────────────────────────────────
+.toast-info    { background-color: var(--ss-info)    !important; color: #fff !important; }
+.toast-success { background-color: var(--ss-success) !important; color: #fff !important; }
+.toast-warning { background-color: var(--ss-warning) !important; color: #fff !important; }
+.toast-error   { background-color: var(--ss-danger)  !important; color: #fff !important; }
 
 .mat-snack-bar-container {
   border-radius: 4px;
@@ -100,21 +97,19 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   align-items: center;
 }
 
-.container {
-  max-width: 960px;
-  margin: 0 auto;
-}
-
+// ── Card utilities ────────────────────────────────────────────────────────────
 .card {
-  border: none !important;
-  border-radius: 8px;
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--ss-border) !important;
+  border-radius: var(--ss-radius-lg) !important;
+  box-shadow: var(--ss-shadow) !important;
+  background-color: var(--ss-bg) !important;
   height: 100% !important;
 }
 
 .card-header {
-  background-color: #f8f9fa;
-  font-weight: bold;
+  background-color: var(--ss-surface) !important;
+  border-bottom: 1px solid var(--ss-border) !important;
+  font-weight: 600;
   padding: 0 !important;
 }
 
@@ -126,9 +121,58 @@ body { margin: 0; font-family: Roboto, "Helvetica Neue", sans-serif; }
   padding: 1.25rem;
 }
 
+// ── ss-card: design-system card (use instead of Bootstrap .card for new UI) ──
+.ss-card {
+  background: var(--ss-bg);
+  border: 1px solid var(--ss-border);
+  border-radius: var(--ss-radius-lg);
+  box-shadow: var(--ss-shadow);
+  padding: 1.5rem;
+}
+
+.ss-card-header {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--ss-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 1rem;
+}
+
+// ── Accent-colored link / button helpers ──────────────────────────────────────
+.ss-link {
+  color: var(--ss-accent);
+  text-decoration: none;
+  &:hover { color: var(--ss-accent-dark); text-decoration: underline; }
+}
+
+// ── Layout helpers ────────────────────────────────────────────────────────────
+.container {
+  max-width: 960px;
+  margin: 0 auto;
+}
+
 .bg-light {
-  background-color: #f8f9fa;
-  border-radius: 0.25rem;
+  background-color: var(--ss-surface) !important;
+  border-radius: var(--ss-radius);
   padding: 1rem;
   margin-bottom: 1rem;
+}
+
+// ── Skeleton shimmer animation ────────────────────────────────────────────────
+@keyframes ss-shimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.ss-skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--ss-surface-2) 25%,
+    var(--ss-border)    50%,
+    var(--ss-surface-2) 75%
+  );
+  background-size: 200% 100%;
+  animation: ss-shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--ss-radius);
 }
